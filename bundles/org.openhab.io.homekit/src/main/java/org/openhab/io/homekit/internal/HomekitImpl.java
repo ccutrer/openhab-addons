@@ -187,6 +187,11 @@ public class HomekitImpl implements Homekit, NetworkAddressChangeListener, Ready
                 for (HomekitChangeListener changeListener : changeListeners) {
                     changeListener.updateSettings(settings);
                 }
+                if (settings.blockUserDeletion != oldSettings.blockUserDeletion) {
+                    for (HomekitAuthInfoImpl authInfo : authInfos) {
+                        authInfo.setBlockUserDeletion(settings.blockUserDeletion);
+                    }
+                }
             }
         } catch (IOException | InvalidAlgorithmParameterException e) {
             logger.warn("could not initialize HomeKit bridge: {}", e.getMessage());
