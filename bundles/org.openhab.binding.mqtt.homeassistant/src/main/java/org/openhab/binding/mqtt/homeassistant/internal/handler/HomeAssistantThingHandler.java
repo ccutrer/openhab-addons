@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.mqtt.homeassistant.internal.handler;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,8 +41,10 @@ import org.openhab.binding.mqtt.homeassistant.internal.HaID;
 import org.openhab.binding.mqtt.homeassistant.internal.HandlerConfiguration;
 import org.openhab.binding.mqtt.homeassistant.internal.component.AbstractComponent;
 import org.openhab.binding.mqtt.homeassistant.internal.component.ComponentFactory;
+import org.openhab.binding.mqtt.homeassistant.internal.component.Update;
 import org.openhab.binding.mqtt.homeassistant.internal.config.ChannelConfigurationTypeAdapterFactory;
 import org.openhab.binding.mqtt.homeassistant.internal.exception.ConfigurationException;
+import org.openhab.core.config.core.validation.ConfigValidationException;
 import org.openhab.core.io.transport.mqtt.MqttBrokerConnection;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -83,7 +86,8 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
         implements ComponentDiscovered, Consumer<List<AbstractComponent<?>>> {
     public static final String AVAILABILITY_CHANNEL = "availability";
     private static final Comparator<Channel> CHANNEL_COMPARATOR_BY_UID = Comparator
-            .comparing(channel -> channel.getUID().toString());;
+            .comparing(channel -> channel.getUID().toString());
+    private static final URI UPDATABLE_CONFIG_DESCRIPTION_URI = URI.create("thing-type:mqtt:homeassistant-updatable");
 
     private final Logger logger = LoggerFactory.getLogger(HomeAssistantThingHandler.class);
 
@@ -101,6 +105,7 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
     protected final TransformationServiceProvider transformationServiceProvider;
 
     private boolean started;
+    private @Nullable Update updateComponent;
 
     /**
      * Create a new thing handler for HomeAssistant MQTT components.
@@ -289,6 +294,11 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
                     return null;
                 });
 
+                if (discovered instanceof Update) {
+                    updateComponent = (Update) discovered;
+                    updateComponent.setReleaseStateUpdateListener(this::releaseStateUpdated);
+                }
+
                 List<Channel> discoveredChannels = discovered.getChannelMap().values().stream()
                         .map(ComponentChannel::getChannel).collect(Collectors.toList());
                 if (known != null) {
@@ -338,6 +348,26 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
         }
     }
 
+    @Override
+    public void handleConfigurationUpdate(Map<String, Object> configurationParameters)
+            throws ConfigValidationException {
+        if (configurationParameters.containsKey("doUpdate")) {
+            configurationParameters = new HashMap<>(configurationParameters);
+            Object value = configurationParameters.remove("doUpdate");
+            if (value instanceof Boolean && ((Boolean) value) == true) {
+                Update updateComponent = this.updateComponent;
+                if (updateComponent == null) {
+                    logger.warn(
+                            "Received update command for Home Assistant device {}, but it does not have an update component.",
+                            getThing().getUID());
+                } else {
+                    updateComponent.doUpdate();
+                }
+            }
+        }
+        super.handleConfigurationUpdate(configurationParameters);
+    }
+
     private void updateThingType() {
         // if this is a dynamic type, then we update the type
         ThingTypeUID typeID = thing.getThingTypeUID();
@@ -351,10 +381,21 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
                         .map(ChannelGroupType::getChannelDefinitions).flatMap(List::stream)
                         .collect(Collectors.toList());
             }
-            ThingType thingType = channelTypeProvider.derive(typeID, MqttBindingConstants.HOMEASSISTANT_MQTT_THING)
-                    .withChannelDefinitions(channelDefs).withChannelGroupDefinitions(groupDefs).build();
+            var builder = channelTypeProvider.derive(typeID, MqttBindingConstants.HOMEASSISTANT_MQTT_THING)
+                    .withChannelDefinitions(channelDefs).withChannelGroupDefinitions(groupDefs);
+            Update updateComponent = this.updateComponent;
+            if (updateComponent != null && updateComponent.isUpdatable()) {
+                builder.withConfigDescriptionURI(UPDATABLE_CONFIG_DESCRIPTION_URI);
+            }
+            ThingType thingType = builder.build();
 
             channelTypeProvider.setThingType(typeID, thingType);
         }
+    }
+
+    private void releaseStateUpdated(Update.ReleaseState state) {
+        Map<String, String> properties = editProperties();
+        properties = state.appendToProperties(properties);
+        updateProperties(properties);
     }
 }
