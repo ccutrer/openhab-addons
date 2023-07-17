@@ -255,8 +255,10 @@ public class JSONSchemaLight extends AbstractRawSchemaLight {
             }
         }
 
+        boolean off = false;
         if (jsonState.state != null) {
             onOffValue.update(onOffValue.parseCommand(new StringType(jsonState.state)));
+            off = onOffValue.getChannelState().equals(OnOffType.OFF);
             if (brightnessValue.getChannelState() instanceof UnDefType) {
                 brightnessValue.update(brightnessValue.parseCommand((OnOffType) onOffValue.getChannelState()));
             }
@@ -265,7 +267,7 @@ public class JSONSchemaLight extends AbstractRawSchemaLight {
             }
         }
 
-        if (jsonState.brightness != null) {
+        if (jsonState.brightness != null && !off) {
             brightnessValue.update(
                     brightnessValue.parseCommand(new DecimalType(Objects.requireNonNull(jsonState.brightness))));
             if (colorValue.getChannelState() instanceof HSBType) {
@@ -287,9 +289,14 @@ public class JSONSchemaLight extends AbstractRawSchemaLight {
         }
 
         if (jsonState.color != null) {
-            PercentType brightness = brightnessValue.getChannelState() instanceof PercentType
-                    ? (PercentType) brightnessValue.getChannelState()
-                    : PercentType.HUNDRED;
+            PercentType brightness;
+            if (off) {
+                brightness = PercentType.ZERO;
+            } else if (brightnessValue.getChannelState() instanceof PercentType) {
+                brightness = (PercentType) brightnessValue.getChannelState();
+            } else {
+                brightness = PercentType.HUNDRED;
+            }
             // This corresponds to "deprecated" color mode handling, since we're not checking which color
             // mode is currently active.
             // HS is highest priority, then XY, then RGB
