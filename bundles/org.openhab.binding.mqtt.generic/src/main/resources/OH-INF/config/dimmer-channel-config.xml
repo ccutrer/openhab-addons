@@ -78,6 +78,14 @@
 			<default>false</default>
 			<advanced>true</advanced>
 		</parameter>
+		<parameter name="emptyStringIsUndef" type="boolean">
+			<label>Treat Empty String as UNDEF</label>
+			<description>If the received MQTT value is empty, treat it as UNDEF instead of logging an error and ignoring it.</description>
+			<default>true</default>
+			<advanced>true</advanced>
+		</parameter>
+
+
 
 		<parameter name="min" type="decimal">
 			<label>Absolute Minimum</label>

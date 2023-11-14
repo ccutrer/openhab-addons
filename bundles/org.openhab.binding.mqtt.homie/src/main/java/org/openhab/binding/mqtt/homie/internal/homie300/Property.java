@@ -162,12 +162,15 @@ public class Property implements AttributeChanged {
         switch (attributes.datatype) {
             case boolean_:
                 value = new OnOffValue("true", "false");
+                value.setUndefValue("");
                 break;
             case color_:
                 if ("hsv".equals(attributes.format)) {
                     value = new ColorValue(ColorMode.HSB, null, null, 100);
+                    value.setUndefValue("");
                 } else if ("rgb".equals(attributes.format)) {
                     value = new ColorValue(ColorMode.RGB, null, null, 100);
+                    value.setUndefValue("");
                 } else {
                     logger.warn("Non supported color format: '{}'. Only 'hsv' and 'rgb' are supported",
                             attributes.format);
@@ -177,6 +180,9 @@ public class Property implements AttributeChanged {
             case enum_:
                 String[] enumValues = attributes.format.split(",");
                 value = new TextValue(enumValues);
+                if (enumValues.length != 0) {
+                    value.setUndefValue("");
+                }
                 break;
             case float_:
             case integer_:
@@ -195,9 +201,11 @@ public class Property implements AttributeChanged {
                 } else {
                     value = new NumberValue(min, max, step, unit);
                 }
+                value.setUndefValue("");
                 break;
             case datetime_:
                 value = new DateTimeValue();
+                value.setUndefValue("");
                 break;
             case string_:
             case unknown:

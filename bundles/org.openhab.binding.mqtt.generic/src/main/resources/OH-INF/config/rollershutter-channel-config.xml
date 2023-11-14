@@ -79,6 +79,13 @@
 			<default>false</default>
 			<advanced>true</advanced>
 		</parameter>
+		<parameter name="emptyStringIsUndef" type="boolean">
+			<label>Treat Empty String as UNDEF</label>
+			<description>If the received MQTT value is empty, treat it as UNDEF instead of logging an error and ignoring it.</description>
+			<default>true</default>
+			<advanced>true</advanced>
+		</parameter>
+
 		<parameter name="on" type="text">
 			<label>Up Command Value</label>
 			<description>A string (like "OPEN") that is sent when commanding the rollershutter to open. If not provided, 0 (or

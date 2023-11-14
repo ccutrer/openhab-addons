@@ -120,7 +120,8 @@ public class NumberValue extends Value {
 
     @Override
     public Type parseMessage(Command command) throws IllegalArgumentException {
-        if (command instanceof StringType && command.toString().equalsIgnoreCase(NAN)) {
+        if (command instanceof StringType
+                && (command.toString().equalsIgnoreCase(NAN) || command.toString().equals(undefValue))) {
             return UnDefType.UNDEF;
         }
         return parseCommand(command);

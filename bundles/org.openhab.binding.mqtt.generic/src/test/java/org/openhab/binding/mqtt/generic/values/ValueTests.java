@@ -82,36 +82,44 @@ public class ValueTests {
         assertThat(hsb.getBrightness().intValue(), is(0));
         hsb = (HSBType) v.parseCommand(p(v, "1"));
         assertThat(hsb.getBrightness().intValue(), is(1));
+
+        v.setUndefValue("");
+        assertThat(v.parseMessage(new StringType("")), is(UnDefType.UNDEF));
     }
 
     @Test
     public void illegalColorUpdate() {
         ColorValue v = new ColorValue(ColorMode.RGB, null, null, 10);
         assertThrows(IllegalArgumentException.class, () -> v.parseCommand(p(v, "255,255,abc")));
+        assertThrows(IllegalArgumentException.class, () -> v.parseCommand(new StringType("")));
     }
 
     @Test
     public void illegalNumberCommand() {
         NumberValue v = new NumberValue(null, null, null, null);
         assertThrows(IllegalArgumentException.class, () -> v.parseCommand(OnOffType.OFF));
+        assertThrows(IllegalArgumentException.class, () -> v.parseCommand(new StringType("")));
     }
 
     @Test
     public void illegalPercentCommand() {
         PercentageValue v = new PercentageValue(null, null, null, null, null);
         assertThrows(IllegalStateException.class, () -> v.parseCommand(new StringType("demo")));
+        assertThrows(IllegalStateException.class, () -> v.parseCommand(new StringType("")));
     }
 
     @Test
     public void illegalOnOffCommand() {
         OnOffValue v = new OnOffValue(null, null);
         assertThrows(IllegalArgumentException.class, () -> v.parseCommand(new DecimalType(101.0)));
+        assertThrows(IllegalArgumentException.class, () -> v.parseCommand(new StringType("")));
     }
 
     @Test
     public void illegalPercentUpdate() {
         PercentageValue v = new PercentageValue(null, null, null, null, null);
         assertThrows(IllegalArgumentException.class, () -> v.parseCommand(new DecimalType(101.0)));
+        assertThrows(IllegalStateException.class, () -> v.parseCommand(new StringType("")));
     }
 
     @Test
@@ -137,6 +145,9 @@ public class ValueTests {
         // Test custom formatting
         assertThat(v.getMQTTpublishValue(OnOffType.OFF, "=%s"), is("=fancyOff"));
         assertThat(v.getMQTTpublishValue(OnOffType.ON, "=%s"), is("=fancyON"));
+
+        v.setUndefValue("");
+        assertThat(v.parseMessage(new StringType("")), is(UnDefType.UNDEF));
     }
 
     @Test
@@ -158,6 +169,9 @@ public class ValueTests {
         // Test basic formatting
         assertThat(v.getMQTTpublishValue(OpenClosedType.CLOSED, null), is("fancyOff"));
         assertThat(v.getMQTTpublishValue(OpenClosedType.OPEN, null), is("fancyON"));
+
+        v.setUndefValue("");
+        assertThat(v.parseMessage(new StringType("")), is(UnDefType.UNDEF));
     }
 
     @Test
@@ -179,6 +193,9 @@ public class ValueTests {
 
         assertThat(v.parseMessage(new StringType("NaN")), is(UnDefType.UNDEF));
         assertThat(v.parseMessage(new StringType("nan")), is(UnDefType.UNDEF));
+
+        v.setUndefValue("");
+        assertThat(v.parseMessage(new StringType("")), is(UnDefType.UNDEF));
     }
 
     @Test
@@ -231,6 +248,9 @@ public class ValueTests {
         // Test parsing from MQTT
         assertThat(v.parseMessage(new StringType("fancyON")), is(UpDownType.UP));
         assertThat(v.parseMessage(new StringType("fancyOff")), is(UpDownType.DOWN));
+
+        v.setUndefValue("");
+        assertThat(v.parseMessage(new StringType("")), is(UnDefType.UNDEF));
     }
 
     @Test
@@ -298,6 +318,9 @@ public class ValueTests {
             command = v.parseCommand(new DecimalType(i));
             assertThat(v.getMQTTpublishValue(command, null), is("" + i));
         }
+
+        v.setUndefValue("");
+        assertThat(v.parseMessage(new StringType("")), is(UnDefType.UNDEF));
     }
 
     @Test
@@ -381,5 +404,18 @@ public class ValueTests {
         PercentageValue v = new PercentageValue(new BigDecimal(10.0), new BigDecimal(110.0), new BigDecimal(1.0), null,
                 null);
         assertThrows(IllegalArgumentException.class, () -> v.parseCommand(new DecimalType(9.0)));
+    }
+
+    @Test
+    public void textUpdate() {
+        TextValue v = new TextValue();
+
+        v.setUndefValue("");
+        assertThat(v.parseMessage(new StringType("")), is(UnDefType.UNDEF));
+        assertThat(v.parseMessage(new StringType("NULL")), is(new StringType("NULL")));
+
+        v.setUndefValue("NULL");
+        assertThat(v.parseMessage(new StringType("NULL")), is(UnDefType.UNDEF));
+        assertThat(v.parseMessage(new StringType("")), is(new StringType("")));
     }
 }

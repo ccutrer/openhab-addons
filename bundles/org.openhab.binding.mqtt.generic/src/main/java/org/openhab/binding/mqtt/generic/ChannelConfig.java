@@ -43,6 +43,7 @@ public class ChannelConfig {
     /** If true, the state topic will not update a state, but trigger a channel instead. */
     public boolean trigger = false;
     public String unit = "";
+    public boolean emptyStringIsUndef = true;
 
     public String transformationPattern = "";
     public String transformationPatternOut = "";
@@ -57,6 +58,7 @@ public class ChannelConfig {
     public @Nullable String stop;
     public @Nullable String onState;
     public @Nullable String offState;
+    public @Nullable String undefValue;
 
     public int onBrightness = 10;
     public String colorMode = ColorMode.HSB.toString();

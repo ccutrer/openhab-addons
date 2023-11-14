@@ -23,6 +23,7 @@ import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.RawType;
+import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.CommandDescriptionBuilder;
 import org.openhab.core.types.State;
@@ -54,11 +55,16 @@ import org.openhab.core.types.UnDefType;
 public abstract class Value {
     protected State state = UnDefType.UNDEF;
     protected final List<Class<? extends Command>> commandTypes;
+    protected @Nullable String undefValue = null;
     private final String itemType;
 
     protected Value(String itemType, List<Class<? extends Command>> commandTypes) {
         this.itemType = itemType;
         this.commandTypes = commandTypes;
+    }
+
+    public void setUndefValue(@Nullable String undefValue) {
+        this.undefValue = undefValue;
     }
 
     /**
@@ -147,6 +153,9 @@ public abstract class Value {
      * @exception IllegalArgumentException Thrown if for example a text is assigned to a number type.
      */
     public Type parseMessage(Command command) throws IllegalArgumentException {
+        if (command instanceof StringType string && string.toString().equals(undefValue)) {
+            return UnDefType.UNDEF;
+        }
         return parseCommand(command);
     }
 

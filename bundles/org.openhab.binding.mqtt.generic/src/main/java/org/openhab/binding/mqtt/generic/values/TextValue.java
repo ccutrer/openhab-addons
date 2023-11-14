@@ -28,6 +28,8 @@ import org.openhab.core.types.CommandDescriptionBuilder;
 import org.openhab.core.types.CommandOption;
 import org.openhab.core.types.StateDescriptionFragmentBuilder;
 import org.openhab.core.types.StateOption;
+import org.openhab.core.types.Type;
+import org.openhab.core.types.UnDefType;
 
 /**
  * Implements a text/string value. Allows to restrict the incoming value to a set of states.
@@ -91,7 +93,11 @@ public class TextValue extends Value {
     }
 
     @Override
-    public StringType parseMessage(Command command) throws IllegalArgumentException {
+    public Type parseMessage(Command command) throws IllegalArgumentException {
+        if (command instanceof StringType string && string.toString().equals(undefValue)) {
+            return UnDefType.UNDEF;
+        }
+
         final Set<String> states = this.states;
         String valueStr = command.toString();
         if (states != null && !states.contains(valueStr)) {

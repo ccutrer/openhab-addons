@@ -86,6 +86,12 @@ public class ValueFactory {
             default:
                 throw new IllegalArgumentException("ChannelTypeUID not recognised: " + channelTypeID);
         }
+
+        if (config.emptyStringIsUndef) {
+            value.setUndefValue("");
+        } else {
+            value.setUndefValue(config.undefValue);
+        }
         return value;
     }
 }
