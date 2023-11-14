@@ -20,6 +20,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.mqtt.generic.values.OnOffValue;
+import org.openhab.binding.mqtt.generic.values.TextValue;
 import org.openhab.core.library.types.OnOffType;
 
 /**
@@ -55,31 +56,37 @@ public class LockTests extends AbstractComponentTests {
                   "name": "lock", \
                   "payload_unlock": "UNLOCK_", \
                   "payload_lock": "LOCK_", \
+                  "state_unlocked": "UNLOCK_", \
+                  "state_locked": "LOCK_", \
                   "state_topic": "zigbee2mqtt/lock/state", \
                   "command_topic": "zigbee2mqtt/lock/set/state" \
                 }\
                 """);
         // @formatter:on
 
-        assertThat(component.channels.size(), is(1));
+        assertThat(component.channels.size(), is(3));
         assertThat(component.getName(), is("lock"));
 
-        assertChannel(component, Lock.SWITCH_CHANNEL_ID, "zigbee2mqtt/lock/state", "zigbee2mqtt/lock/set/state", "lock",
+        assertChannel(component, Lock.LOCK_CHANNEL_ID, "zigbee2mqtt/lock/state", "zigbee2mqtt/lock/set/state", "Lock",
                 OnOffValue.class);
+        assertChannel(component, Lock.STATE_CHANNEL_ID, "zigbee2mqtt/lock/state", "", "State", TextValue.class);
+        assertChannel(component, Lock.OPEN_CHANNEL_ID, "", "zigbee2mqtt/lock/set/state", "Open", OnOffValue.class);
 
         publishMessage("zigbee2mqtt/lock/state", "LOCK_");
-        assertState(component, Lock.SWITCH_CHANNEL_ID, OnOffType.ON);
+        assertState(component, Lock.LOCK_CHANNEL_ID, OnOffType.ON);
         publishMessage("zigbee2mqtt/lock/state", "LOCK_");
-        assertState(component, Lock.SWITCH_CHANNEL_ID, OnOffType.ON);
+        assertState(component, Lock.LOCK_CHANNEL_ID, OnOffType.ON);
         publishMessage("zigbee2mqtt/lock/state", "UNLOCK_");
-        assertState(component, Lock.SWITCH_CHANNEL_ID, OnOffType.OFF);
+        assertState(component, Lock.LOCK_CHANNEL_ID, OnOffType.OFF);
         publishMessage("zigbee2mqtt/lock/state", "LOCK_");
-        assertState(component, Lock.SWITCH_CHANNEL_ID, OnOffType.ON);
+        assertState(component, Lock.LOCK_CHANNEL_ID, OnOffType.ON);
 
-        component.getChannel(Lock.SWITCH_CHANNEL_ID).getState().publishValue(OnOffType.OFF);
+        component.getChannel(Lock.LOCK_CHANNEL_ID).getState().publishValue(OnOffType.OFF);
         assertPublished("zigbee2mqtt/lock/set/state", "UNLOCK_");
-        component.getChannel(Lock.SWITCH_CHANNEL_ID).getState().publishValue(OnOffType.ON);
+        component.getChannel(Lock.LOCK_CHANNEL_ID).getState().publishValue(OnOffType.ON);
         assertPublished("zigbee2mqtt/lock/set/state", "LOCK_");
+        component.getChannel(Lock.OPEN_CHANNEL_ID).getState().publishValue(OnOffType.ON);
+        assertPublished("zigbee2mqtt/lock/set/state", "OPEN");
     }
 
     @Test
