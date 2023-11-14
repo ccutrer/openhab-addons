@@ -133,7 +133,7 @@ public class RollershutterValue extends Value {
     }
 
     @Override
-    public Command parseMessage(Command command) throws IllegalArgumentException {
+    public Type parseMessage(Command command) throws IllegalArgumentException {
         command = parseType(command, upStateString, downStateString);
         if (inverted && command instanceof PercentType percentType) {
             return new PercentType(100 - percentType.intValue());
