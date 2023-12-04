@@ -712,6 +712,7 @@ Switch Button4 "Switch D" (gSceneController) { homekit="StatelessProgrammableSwi
 For configuration options, the default values are in parentheses.
 For enum values, the parentheses indicate the default values if the item is a Number or a Switch.
 All enum values can be customized via item metadata. I.e. `HEAT="heating", COOL="cooling"`, or `HEAT=5, COOL=7` for a Number.
+You can also namespace the enum key if you are linking multiple characteristics to the same item, and they would otherwise conflict, such as LockCurrentState and LockTargetState: `LockCurrentState_SECURED="LOCKED", LockTargetState_SECURED="LOCK"`.
 <a id="customizeable-enum">Some enums can have the list of valid values customized, meaning that if you customize the mapping, any value that is missing will not be presented to the user.</a>
 They are appropriately marked.
 Enums that are linked to Switches or Contacts have an `inverted` param that will reverse the sense of `ON`/`OFF` or `OPEN`/`CLOSED`.

@@ -351,8 +351,12 @@ public class HomekitCharacteristicFactory {
         }
         var configuration = item.getConfiguration();
         if (configuration != null) {
+            String namespace = klazz.getSimpleName().replace("Enum", "") + "_";
             map.forEach((k, current_value) -> {
-                final Object newValue = configuration.get(k.toString());
+                Object newValue = configuration.get(namespace + k.toString());
+                if (newValue == null) {
+                    newValue = configuration.get(k.toString());
+                }
                 if (newValue instanceof String || newValue instanceof Number) {
                     map.put(k, newValue.toString());
                     if (customEnumList != null) {
