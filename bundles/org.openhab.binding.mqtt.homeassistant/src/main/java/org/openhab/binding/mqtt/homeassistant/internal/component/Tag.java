@@ -14,6 +14,7 @@ package org.openhab.binding.mqtt.homeassistant.internal.component;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.mqtt.generic.values.TextValue;
+import org.openhab.binding.mqtt.homeassistant.generic.internal.MqttBindingConstants;
 import org.openhab.binding.mqtt.homeassistant.internal.config.dto.AbstractChannelConfiguration;
 
 import com.google.gson.annotations.SerializedName;
@@ -42,7 +43,8 @@ public class Tag extends AbstractComponent<Tag.ChannelConfiguration> {
     public Tag(ComponentFactory.ComponentConfiguration componentConfiguration) {
         super(componentConfiguration, ChannelConfiguration.class);
 
-        buildChannel(TAG_CHANNEL_ID, new TextValue(), getName(), componentConfiguration.getUpdateListener())
+        buildChannel(TAG_CHANNEL_ID, MqttBindingConstants.CHANNEL_TYPE_UID_TRIGGER, new TextValue(), getName(),
+                componentConfiguration.getUpdateListener())
                 .stateTopic(channelConfiguration.topic, channelConfiguration.getValueTemplate())//
                 .trigger(true).build();
     }
