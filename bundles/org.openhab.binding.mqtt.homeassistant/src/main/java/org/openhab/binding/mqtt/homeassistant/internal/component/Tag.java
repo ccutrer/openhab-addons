@@ -40,8 +40,8 @@ public class Tag extends AbstractComponent<Tag.ChannelConfiguration> {
         protected String topic = "";
     }
 
-    public Tag(ComponentFactory.ComponentConfiguration componentConfiguration) {
-        super(componentConfiguration, ChannelConfiguration.class);
+    public Tag(ComponentFactory.ComponentConfiguration componentConfiguration, boolean newStyleChannels) {
+        super(componentConfiguration, ChannelConfiguration.class, newStyleChannels, true);
 
         buildChannel(TAG_CHANNEL_ID, MqttBindingConstants.CHANNEL_TYPE_UID_TRIGGER, new TextValue(), getName(),
                 componentConfiguration.getUpdateListener())
