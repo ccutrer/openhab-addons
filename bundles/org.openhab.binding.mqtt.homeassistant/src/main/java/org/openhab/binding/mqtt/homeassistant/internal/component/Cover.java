@@ -85,8 +85,8 @@ public class Cover extends AbstractComponent<Cover.ChannelConfiguration> {
     @Nullable
     ComponentChannel stateChannel = null;
 
-    public Cover(ComponentFactory.ComponentConfiguration componentConfiguration, boolean newStyleChannels) {
-        super(componentConfiguration, ChannelConfiguration.class, newStyleChannels);
+    public Cover(ComponentFactory.ComponentConfiguration componentConfiguration) {
+        super(componentConfiguration, ChannelConfiguration.class);
 
         String stateTopic = channelConfiguration.stateTopic;
 

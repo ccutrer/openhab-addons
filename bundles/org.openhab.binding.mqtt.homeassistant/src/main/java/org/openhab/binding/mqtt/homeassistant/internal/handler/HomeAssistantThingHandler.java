@@ -104,7 +104,6 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
     protected final TransformationServiceProvider transformationServiceProvider;
 
     private boolean started;
-    private boolean newStyleChannels;
     private @Nullable Update updateComponent;
 
     /**
@@ -129,11 +128,16 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
         this.attributeReceiveTimeout = attributeReceiveTimeout;
         this.delayedProcessing = new DelayedBatchProcessing<>(attributeReceiveTimeout, this, scheduler);
 
-        Map<String, String> properties = getThing().getProperties();
-        newStyleChannels = "true".equals(thing.getProperties().get("newStyleChannels"));
+        // this was a property set for transitional purposes on openHAB 4.3.0;
+        // it can be removed now
+        Map<String, String> properties = editProperties();
+        if (properties.containsKey("newStyleChannels")) {
+            properties.remove("newStyleChannels");
+            updateProperties(properties);
+        }
 
         this.discoverComponents = new DiscoverComponents(thing.getUID(), scheduler, this, this, gson,
-                this.transformationServiceProvider, newStyleChannels);
+                this.transformationServiceProvider);
     }
 
     @Override
@@ -163,7 +167,7 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
             } else {
                 try {
                     component = ComponentFactory.createComponent(thingUID, haID, channelConfigurationJSON, this, this,
-                            scheduler, gson, transformationServiceProvider, newStyleChannels);
+                            scheduler, gson, transformationServiceProvider);
                     if (typeID.equals(MqttBindingConstants.HOMEASSISTANT_MQTT_THING)) {
                         typeID = calculateThingTypeUID(component);
                     }

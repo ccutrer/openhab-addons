@@ -48,46 +48,46 @@ public class ComponentFactory {
      */
     public static AbstractComponent<?> createComponent(ThingUID thingUID, HaID haID, String channelConfigurationJSON,
             ChannelStateUpdateListener updateListener, AvailabilityTracker tracker, ScheduledExecutorService scheduler,
-            Gson gson, TransformationServiceProvider transformationServiceProvider, boolean newStyleChannels)
+            Gson gson, TransformationServiceProvider transformationServiceProvider)
             throws ConfigurationException {
         ComponentConfiguration componentConfiguration = new ComponentConfiguration(thingUID, haID,
                 channelConfigurationJSON, gson, updateListener, tracker, scheduler)
                 .transformationProvider(transformationServiceProvider);
         switch (haID.component) {
             case "alarm_control_panel":
-                return new AlarmControlPanel(componentConfiguration, newStyleChannels);
+                return new AlarmControlPanel(componentConfiguration);
             case "binary_sensor":
-                return new BinarySensor(componentConfiguration, newStyleChannels);
+                return new BinarySensor(componentConfiguration);
             case "button":
-                return new Button(componentConfiguration, newStyleChannels);
+                return new Button(componentConfiguration);
             case "camera":
-                return new Camera(componentConfiguration, newStyleChannels);
+                return new Camera(componentConfiguration);
             case "cover":
-                return new Cover(componentConfiguration, newStyleChannels);
+                return new Cover(componentConfiguration);
             case "fan":
-                return new Fan(componentConfiguration, newStyleChannels);
+                return new Fan(componentConfiguration);
             case "climate":
-                return new Climate(componentConfiguration, newStyleChannels);
+                return new Climate(componentConfiguration);
             case "device_automation":
-                return new DeviceTrigger(componentConfiguration, newStyleChannels);
+                return new DeviceTrigger(componentConfiguration);
             case "light":
-                return Light.create(componentConfiguration, newStyleChannels);
+                return Light.create(componentConfiguration);
             case "lock":
-                return new Lock(componentConfiguration, newStyleChannels);
+                return new Lock(componentConfiguration);
             case "number":
-                return new Number(componentConfiguration, newStyleChannels);
+                return new Number(componentConfiguration);
             case "scene":
-                return new Scene(componentConfiguration, newStyleChannels);
+                return new Scene(componentConfiguration);
             case "select":
-                return new Select(componentConfiguration, newStyleChannels);
+                return new Select(componentConfiguration);
             case "sensor":
-                return new Sensor(componentConfiguration, newStyleChannels);
+                return new Sensor(componentConfiguration);
             case "switch":
-                return new Switch(componentConfiguration, newStyleChannels);
+                return new Switch(componentConfiguration);
             case "update":
-                return new Update(componentConfiguration, newStyleChannels);
+                return new Update(componentConfiguration);
             case "vacuum":
-                return new Vacuum(componentConfiguration, newStyleChannels);
+                return new Vacuum(componentConfiguration);
             default:
                 throw new UnsupportedComponentException("Component '" + haID + "' is unsupported!");
         }

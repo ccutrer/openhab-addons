@@ -82,9 +82,8 @@ public abstract class AbstractComponent<C extends AbstractChannelConfiguration> 
     protected final String groupId;
     protected final String uniqueId;
 
-    public AbstractComponent(ComponentFactory.ComponentConfiguration componentConfiguration, Class<C> clazz,
-            boolean newStyleChannels) {
-        this(componentConfiguration, clazz, newStyleChannels, false);
+    public AbstractComponent(ComponentFactory.ComponentConfiguration componentConfiguration, Class<C> clazz) {
+        this(componentConfiguration, clazz, false);
     }
 
     /**
@@ -92,14 +91,12 @@ public abstract class AbstractComponent<C extends AbstractChannelConfiguration> 
      *
      * @param componentConfiguration generic componentConfiguration with not parsed JSON config
      * @param clazz target configuration type
-     * @param newStyleChannels if new style channels should be used
      * @param singleChannelComponent if this component only ever has one channel, so should never be in a group
-     *            (only if newStyleChannels is true)
      */
     public AbstractComponent(ComponentFactory.ComponentConfiguration componentConfiguration, Class<C> clazz,
-            boolean newStyleChannels, boolean singleChannelComponent) {
+            boolean singleChannelComponent) {
         this.componentConfiguration = componentConfiguration;
-        this.singleChannelComponent = newStyleChannels && singleChannelComponent;
+        this.singleChannelComponent = singleChannelComponent;
 
         this.channelConfigurationJson = componentConfiguration.getConfigJSON();
         this.channelConfiguration = componentConfiguration.getConfig(clazz);
@@ -109,7 +106,7 @@ public abstract class AbstractComponent<C extends AbstractChannelConfiguration> 
 
         String name = channelConfiguration.getName();
         if (name != null && !name.isEmpty()) {
-            groupId = this.haID.getGroupId(channelConfiguration.getUniqueId(), newStyleChannels);
+            groupId = this.haID.getGroupId(channelConfiguration.getUniqueId());
 
             this.channelGroupUID = this.singleChannelComponent ? null
                     : new ChannelGroupUID(componentConfiguration.getThingUID(), groupId);

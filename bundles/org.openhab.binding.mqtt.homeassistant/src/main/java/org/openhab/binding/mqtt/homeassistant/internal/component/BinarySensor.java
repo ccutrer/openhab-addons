@@ -68,8 +68,8 @@ public class BinarySensor extends AbstractComponent<BinarySensor.ChannelConfigur
         protected @Nullable List<String> jsonAttributes;
     }
 
-    public BinarySensor(ComponentFactory.ComponentConfiguration componentConfiguration, boolean newStyleChannels) {
-        super(componentConfiguration, ChannelConfiguration.class, newStyleChannels, true);
+    public BinarySensor(ComponentFactory.ComponentConfiguration componentConfiguration) {
+        super(componentConfiguration, ChannelConfiguration.class, true);
 
         OnOffValue value = new OnOffValue(channelConfiguration.payloadOn, channelConfiguration.payloadOff);
 
