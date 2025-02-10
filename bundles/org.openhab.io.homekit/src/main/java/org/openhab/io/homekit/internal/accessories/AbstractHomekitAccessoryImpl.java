@@ -16,10 +16,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -80,7 +80,7 @@ public abstract class AbstractHomekitAccessoryImpl implements HomekitAccessory {
         this.updater = updater;
         this.services = new ArrayList<>();
         this.settings = settings;
-        this.rawCharacteristics = new HashMap<>();
+        this.rawCharacteristics = new TreeMap<>();
         // create raw characteristics for mandatory characteristics
         characteristics.forEach(c -> {
             var rawCharacteristic = HomekitCharacteristicFactory.createNullableCharacteristic(c, updater);
