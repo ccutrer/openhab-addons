@@ -103,7 +103,6 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
 
     private final Gson gson;
     protected final Map<@Nullable String, AbstractComponent<?>> haComponents = new HashMap<>();
-    protected final Map<@Nullable String, AbstractComponent<?>> haComponentsByUniqueId = new HashMap<>();
     protected final Map<HaID, AbstractComponent<?>> haComponentsByHaId = new HashMap<>();
     protected final Map<ChannelUID, ChannelState> channelStates = new HashMap<>();
 
@@ -248,7 +247,6 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
                     .collect(FutureCollector.allOf()).join();
 
             haComponents.clear();
-            haComponentsByUniqueId.clear();
             haComponentsByHaId.clear();
             channelStates.clear();
             discoveryHomeAssistantIDs.clear();
@@ -316,20 +314,15 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
                 if (typeID.equals(MqttBindingConstants.HOMEASSISTANT_MQTT_THING)) {
                     typeID = calculateThingTypeUID(discovered);
                 }
-                AbstractComponent<?> known = haComponentsByUniqueId.get(discovered.getUniqueId());
+                AbstractComponent<?> known = haComponentsByHaId.get(discovered.getHaID());
                 // Is component already known?
                 if (known != null) {
-                    if (discovered.getConfigHash() != known.getConfigHash()
-                            && discovered.getUniqueId().equals(known.getUniqueId())) {
+                    if (discovered.getConfigHash() != known.getConfigHash()) {
                         // Don't wait for the future to complete. We are also not interested in failures.
                         // The component will be replaced in a moment.
                         known.stop();
-                        haComponentsByUniqueId.remove(discovered.getUniqueId());
                         haComponentsByHaId.remove(known.getHaID());
                         haComponents.remove(known.getComponentId());
-                        if (!known.getComponentId().equals(discovered.getComponentId())) {
-                            discovered.resolveConflict();
-                        }
                     } else {
                         known.setConfigSeen();
                         continue;
@@ -365,7 +358,6 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
                 if (known != null) {
                     // Don't wait for the future to complete. We are also not interested in failures.
                     known.stop();
-                    haComponentsByUniqueId.remove(known.getUniqueId());
                     haComponents.remove(known.getComponentId());
                     haComponentsByHaId.remove(removed);
                     componentActuallyRemoved = true;
@@ -497,7 +489,6 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
                         return null;
                     });
                 }
-                haComponentsByUniqueId.put(component.getUniqueId(), component);
                 haComponentsByHaId.put(component.getHaID(), component);
                 return false;
             }
@@ -509,7 +500,6 @@ public class HomeAssistantThingHandler extends AbstractMQTTThingHandler
             haComponents.put(existing.getComponentId(), existing);
         }
         haComponents.put(component.getComponentId(), component);
-        haComponentsByUniqueId.put(component.getUniqueId(), component);
         haComponentsByHaId.put(component.getHaID(), component);
         return true;
     }

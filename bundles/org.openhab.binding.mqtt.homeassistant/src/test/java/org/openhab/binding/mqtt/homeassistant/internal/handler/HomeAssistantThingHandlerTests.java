@@ -468,4 +468,71 @@ public class HomeAssistantThingHandlerTests extends AbstractHomeAssistantTests {
         Channel sensorChannel = nonSpyThingHandler.getThing().getChannel("activeEnergyReports_sensor#sensor");
         assertThat("Sensor channel is created", sensorChannel, notNullValue());
     }
+
+    @Test
+    public void testUniqueIdChange() throws InterruptedException {
+        thingHandler = new HomeAssistantThingHandler(haThing, channelTypeProvider, stateDescriptionProvider,
+                channelTypeRegistry, new Jinjava(), unitProvider, SUBSCRIBE_TIMEOUT, ATTRIBUTE_RECEIVE_TIMEOUT);
+        thingHandler.setConnection(bridgeConnection);
+        thingHandler.setCallback(callbackMock);
+        nonSpyThingHandler = thingHandler;
+        thingHandler = spy(thingHandler);
+
+        thingHandler.initialize();
+
+        verify(callbackMock).statusUpdated(eq(haThing), any());
+        // Expect a call to the bridge status changed, the start, the propertiesChanged method
+        verify(thingHandler).bridgeStatusChanged(any());
+        verify(thingHandler, timeout(SUBSCRIBE_TIMEOUT)).start(any());
+
+        MQTT_TOPICS.forEach(t -> {
+            verify(bridgeConnection, timeout(SUBSCRIBE_TIMEOUT)).subscribe(eq(t), any());
+        });
+
+        verify(thingHandler, never()).componentDiscovered(any(), any());
+        assertThat(haThing.getChannels().size(), is(0));
+
+        thingHandler.discoverComponents.processMessage("homeassistant/binary_sensor/abc/onoffsensor/config", """
+                {
+                  "availability": [
+                    {
+                      "topic": "zigbee2mqtt/bridge/state"
+                    }
+                  ],
+                  "device": {
+                    "sw_version": "Zigbee2MQTT 1.18.2"
+                  },
+                  "name": "onoffsensor",
+                  "state_topic": "zigbee2mqtt/sensor/state",
+                  "unique_id": "sn1",
+                  "value_template": "{{ value_json.state }}"
+                }
+                """.getBytes(StandardCharsets.UTF_8));
+
+        // A change in the Unique ID shouldn't trigger conflict resolution
+        thingHandler.discoverComponents.processMessage("homeassistant/binary_sensor/abc/onoffsensor/config", """
+                {
+                  "availability": [
+                    {
+                      "topic": "zigbee2mqtt/bridge/state"
+                    }
+                  ],
+                  "device": {
+                    "sw_version": "Zigbee2MQTT 1.18.3"
+                  },
+                  "name": "onoffsensor",
+                  "state_topic": "zigbee2mqtt/sensor/state",
+                  "unique_id": "sn2",
+                  "value_template": "{{ value_json.state }}"
+                }
+                """.getBytes(StandardCharsets.UTF_8));
+
+        thingHandler.delayedProcessing.forceProcessNow();
+        waitForAssert(() -> {
+            assertThat("1 channel created", nonSpyThingHandler.getThing().getChannels().size() == 1);
+        });
+
+        Channel sensorChannel = nonSpyThingHandler.getThing().getChannel("onoffsensor");
+        assertThat("Sensor channel is created", sensorChannel, notNullValue());
+    }
 }
