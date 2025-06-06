@@ -29,9 +29,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.openhab.binding.homie.internal.handler.ThingChannelConstants;
-import org.openhab.binding.homie.internal.homie300.DeviceCallback;
-import org.openhab.binding.homie.internal.homie300.Node;
-import org.openhab.binding.homie.internal.homie300.NodeAttributes;
+import org.openhab.binding.homie.internal.homie.DeviceCallback;
+import org.openhab.binding.homie.internal.homie.Node;
+import org.openhab.binding.homie.internal.homie.NodeAttributes;
 import org.openhab.binding.mqtt.generic.tools.ChildMap;
 
 /**

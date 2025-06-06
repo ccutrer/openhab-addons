@@ -10,30 +10,31 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.homie.internal.homie300;
+package org.openhab.binding.homie.internal.homie500;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.mqtt.generic.mapping.AbstractMqttAttributeClass;
-import org.openhab.binding.mqtt.generic.mapping.MQTTvalueTransform;
+import org.openhab.binding.homie.internal.homie.DeviceAttributes;
+import org.openhab.binding.homie.internal.homie.NodeAttributes;
 import org.openhab.binding.mqtt.generic.mapping.MandatoryField;
 import org.openhab.binding.mqtt.generic.mapping.TopicPrefix;
 
 /**
- * Homie 3.x Node attributes
+ * Homie 5.x Device attributes
  *
- * @author David Graeff - Initial contribution
+ * @author Cody Cutrer - Initial contribution
  */
 @TopicPrefix
 @NonNullByDefault
-public class NodeAttributes extends AbstractMqttAttributeClass {
-    public @MandatoryField String name = "";
-    public @MandatoryField @MQTTvalueTransform(splitCharacter = ",") String @Nullable [] properties;
-    // Type has no meaning yet and is currently purely of textual, descriptive nature
-    public @Nullable String type;
+public class Homie500DeviceAttributes extends DeviceAttributes {
+    public @MandatoryField @Nullable String description;
 
     @Override
-    public Object getFieldsOf() {
-        return this;
+    public void reset() {
+    }
+
+    @Override
+    public NodeAttributes createNodeAttributes() {
+        return new Homie500NodeAttributes();
     }
 }

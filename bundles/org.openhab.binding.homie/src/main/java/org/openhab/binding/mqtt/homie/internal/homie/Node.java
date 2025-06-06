@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.homie.internal.homie300;
+package org.openhab.binding.homie.internal.homie;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Homie 3.x Node.
+ * Homie Node.
  *
  * A Homie Node contains Homie Properties ({@link Property}) but can also have attributes ({@link NodeAttributes}).
  * It corresponds to a ChannelGroup.

@@ -10,10 +10,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.homie.internal.homie300;
+package org.openhab.binding.homie.internal.homie;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.homie.internal.homie300.DeviceAttributes.ReadyState;
+import org.openhab.binding.homie.internal.homie.DeviceAttributes.ReadyState;
 import org.openhab.binding.mqtt.generic.ChannelStateUpdateListener;
 
 /**

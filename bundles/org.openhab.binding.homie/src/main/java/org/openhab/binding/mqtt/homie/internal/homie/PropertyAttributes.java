@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.homie.internal.homie300;
+package org.openhab.binding.homie.internal.homie;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -21,7 +21,7 @@ import org.openhab.binding.mqtt.generic.mapping.MQTTvalueTransform;
 import org.openhab.binding.mqtt.generic.mapping.TopicPrefix;
 
 /**
- * Homie 3.x Property attributes
+ * Homie Property attributes
  *
  * @author David Graeff - Initial contribution
  */

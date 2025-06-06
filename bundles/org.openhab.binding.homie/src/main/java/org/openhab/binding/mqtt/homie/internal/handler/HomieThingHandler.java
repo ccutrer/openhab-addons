@@ -25,13 +25,12 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.homie.internal.HomieBindingConstants;
-import org.openhab.binding.homie.internal.homie300.Device;
-import org.openhab.binding.homie.internal.homie300.DeviceAttributes;
-import org.openhab.binding.homie.internal.homie300.DeviceAttributes.ReadyState;
-import org.openhab.binding.homie.internal.homie300.DeviceCallback;
-import org.openhab.binding.homie.internal.homie300.HandlerConfiguration;
-import org.openhab.binding.homie.internal.homie300.Node;
-import org.openhab.binding.homie.internal.homie300.Property;
+import org.openhab.binding.homie.internal.homie.Device;
+import org.openhab.binding.homie.internal.homie.DeviceAttributes.ReadyState;
+import org.openhab.binding.homie.internal.homie.DeviceCallback;
+import org.openhab.binding.homie.internal.homie.HandlerConfiguration;
+import org.openhab.binding.homie.internal.homie.Node;
+import org.openhab.binding.homie.internal.homie.Property;
 import org.openhab.binding.mqtt.generic.AbstractMQTTThingHandler;
 import org.openhab.binding.mqtt.generic.ChannelState;
 import org.openhab.binding.mqtt.generic.MqttChannelStateDescriptionProvider;
@@ -99,7 +98,7 @@ public class HomieThingHandler extends AbstractMQTTThingHandler implements Devic
         this.subscribeTimeout = subscribeTimeout;
         this.attributeReceiveTimeout = attributeReceiveTimeout;
         this.delayedProcessing = new DelayedBatchProcessing<>(subscribeTimeout, this, scheduler);
-        this.device = new Device(this.thing.getUID(), this, new DeviceAttributes());
+        this.device = new Device(this.thing.getUID(), this);
     }
 
     /**
@@ -122,7 +121,7 @@ public class HomieThingHandler extends AbstractMQTTThingHandler implements Devic
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Object ID unknown");
             return;
         }
-        device.initialize(config.basetopic, config.deviceid, thing.getChannels());
+        device.initialize(config.basetopic, config.deviceid, config.homieVersion, thing.getChannels());
 
         updateThingType();
         ThingTypeUID typeID = getThing().getThingTypeUID();
@@ -260,7 +259,7 @@ public class HomieThingHandler extends AbstractMQTTThingHandler implements Devic
         if (!device.isInitialized()) {
             return;
         }
-        updateProperty(HomieBindingConstants.HOMIE_PROPERTY_VERSION, device.attributes.homie);
+        updateProperty(HomieBindingConstants.HOMIE_PROPERTY_VERSION, device.attributes.getHomieVersion());
         updateThingType();
         updateChannels();
         final MqttBrokerConnection connection = this.connection;
@@ -320,7 +319,7 @@ public class HomieThingHandler extends AbstractMQTTThingHandler implements Devic
     }
 
     private Collection<String> nodeOrder() {
-        String[] nodes = device.attributes.nodes;
+        String[] nodes = device.attributes.getNodes();
         if (nodes != null) {
             return Stream.of(nodes).toList();
         }

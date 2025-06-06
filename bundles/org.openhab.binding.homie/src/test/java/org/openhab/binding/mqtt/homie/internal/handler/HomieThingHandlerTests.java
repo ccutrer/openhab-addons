@@ -43,14 +43,14 @@ import org.mockito.quality.Strictness;
 import org.openhab.binding.homie.ChannelStateHelper;
 import org.openhab.binding.homie.ThingHandlerHelper;
 import org.openhab.binding.homie.internal.HomieBindingConstants;
-import org.openhab.binding.homie.internal.homie300.Device;
-import org.openhab.binding.homie.internal.homie300.DeviceAttributes;
-import org.openhab.binding.homie.internal.homie300.DeviceAttributes.ReadyState;
-import org.openhab.binding.homie.internal.homie300.Node;
-import org.openhab.binding.homie.internal.homie300.NodeAttributes;
-import org.openhab.binding.homie.internal.homie300.Property;
-import org.openhab.binding.homie.internal.homie300.PropertyAttributes;
-import org.openhab.binding.homie.internal.homie300.PropertyAttributes.DataTypeEnum;
+import org.openhab.binding.homie.internal.homie.Device;
+import org.openhab.binding.homie.internal.homie.DeviceAttributes.ReadyState;
+import org.openhab.binding.homie.internal.homie.Node;
+import org.openhab.binding.homie.internal.homie.NodeAttributes;
+import org.openhab.binding.homie.internal.homie.Property;
+import org.openhab.binding.homie.internal.homie.PropertyAttributes;
+import org.openhab.binding.homie.internal.homie.PropertyAttributes.DataTypeEnum;
+import org.openhab.binding.homie.internal.homie300.Homie300DeviceAttributes;
 import org.openhab.binding.mqtt.generic.ChannelState;
 import org.openhab.binding.mqtt.generic.MqttChannelStateDescriptionProvider;
 import org.openhab.binding.mqtt.generic.MqttChannelTypeProvider;
@@ -146,8 +146,7 @@ public class HomieThingHandlerTests {
                 channelTypeRegistryMock, 1000, 30, 5);
         thingHandler = spy(handler);
         thingHandler.setCallback(callbackMock);
-        final Device device = new Device(thing.getUID(), thingHandler, spy(new DeviceAttributes()),
-                spy(new ChildMap<>()));
+        final Device device = new Device(thing.getUID(), thingHandler, spy(new ChildMap<>()));
         thingHandler.setInternalObjects(spy(device),
                 spy(new DelayedBatchProcessing<>(500, thingHandler, schedulerMock)));
 
@@ -330,7 +329,7 @@ public class HomieThingHandlerTests {
 
     @Test
     public void propertiesChanged() throws InterruptedException, ExecutionException {
-        thingHandler.device.initialize("homie", "device", new ArrayList<>());
+        thingHandler.device.initialize("homie", "device", "3.0.0", new ArrayList<>());
         ThingHandlerHelper.setConnection(thingHandler, connectionMock);
 
         doReturn("String").when(channelTypeMock).getItemType();
@@ -342,9 +341,10 @@ public class HomieThingHandlerTests {
                 any(), anyBoolean());
 
         thingHandler.device.attributes.state = ReadyState.ready;
-        thingHandler.device.attributes.name = "device";
-        thingHandler.device.attributes.homie = "3.0";
-        thingHandler.device.attributes.nodes = new String[] { "node" };
+        Homie300DeviceAttributes deviceAttributes = (Homie300DeviceAttributes) thingHandler.device.attributes;
+        deviceAttributes.name = "device";
+        deviceAttributes.homie = "3.0";
+        deviceAttributes.nodes = new String[] { "node" };
 
         // Intercept creating a node in initialize()->start() and inject a spy'ed node.
         doAnswer(i -> createSpyNode("node", thingHandler.device)).when(thingHandler.device).createNode(any());

@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.homie.internal.homie300;
+package org.openhab.binding.homie.internal.homie;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -29,7 +29,7 @@ import javax.measure.Unit;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.homie.internal.HomieBindingConstants;
-import org.openhab.binding.homie.internal.homie300.PropertyAttributes.DataTypeEnum;
+import org.openhab.binding.homie.internal.homie.PropertyAttributes.DataTypeEnum;
 import org.openhab.binding.mqtt.generic.ChannelConfigBuilder;
 import org.openhab.binding.mqtt.generic.ChannelState;
 import org.openhab.binding.mqtt.generic.mapping.AbstractMqttAttributeClass.AttributeChanged;
