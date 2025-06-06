@@ -27,7 +27,9 @@ public class MqttBindingConstants {
     public static final String BINDING_ID = "mqtt";
 
     // List of all Thing Type UIDs
+    // Deprecated, new things created with the non-versioned UID
     public static final ThingTypeUID HOMIE300_MQTT_THING = new ThingTypeUID(BINDING_ID, "homie300");
+    public static final ThingTypeUID HOMIE_MQTT_THING = new ThingTypeUID(BINDING_ID, "homie");
 
     public static final String CHANNEL_TYPE_HOMIE_PREFIX = "homie-";
     public static final String CHANNEL_TYPE_HOMIE_STRING = "homie-string";

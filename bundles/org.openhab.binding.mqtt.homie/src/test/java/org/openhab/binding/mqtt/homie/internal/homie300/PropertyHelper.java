@@ -10,14 +10,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.mqtt.homie.internal.homie300;
+package org.openhab.binding.mqtt.homie.internal.homie;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.mqtt.generic.ChannelState;
 
 /**
- * Helper to access {@link org.openhab.binding.mqtt.homie.internal.homie300.Property} internals.
+ * Helper to access {@link org.openhab.binding.mqtt.homie.internal.homie.Property} internals.
  *
  * @author David Graeff - Initial contribution
  */

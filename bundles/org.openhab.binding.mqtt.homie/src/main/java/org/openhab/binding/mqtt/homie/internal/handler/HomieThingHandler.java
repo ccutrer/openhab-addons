@@ -30,13 +30,12 @@ import org.openhab.binding.mqtt.generic.MqttChannelStateDescriptionProvider;
 import org.openhab.binding.mqtt.generic.MqttChannelTypeProvider;
 import org.openhab.binding.mqtt.generic.tools.DelayedBatchProcessing;
 import org.openhab.binding.mqtt.homie.generic.internal.MqttBindingConstants;
-import org.openhab.binding.mqtt.homie.internal.homie300.Device;
-import org.openhab.binding.mqtt.homie.internal.homie300.DeviceAttributes;
-import org.openhab.binding.mqtt.homie.internal.homie300.DeviceAttributes.ReadyState;
-import org.openhab.binding.mqtt.homie.internal.homie300.DeviceCallback;
-import org.openhab.binding.mqtt.homie.internal.homie300.HandlerConfiguration;
-import org.openhab.binding.mqtt.homie.internal.homie300.Node;
-import org.openhab.binding.mqtt.homie.internal.homie300.Property;
+import org.openhab.binding.mqtt.homie.internal.homie.Device;
+import org.openhab.binding.mqtt.homie.internal.homie.DeviceAttributes.ReadyState;
+import org.openhab.binding.mqtt.homie.internal.homie.DeviceCallback;
+import org.openhab.binding.mqtt.homie.internal.homie.HandlerConfiguration;
+import org.openhab.binding.mqtt.homie.internal.homie.Node;
+import org.openhab.binding.mqtt.homie.internal.homie.Property;
 import org.openhab.core.io.transport.mqtt.MqttBrokerConnection;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -99,7 +98,7 @@ public class HomieThingHandler extends AbstractMQTTThingHandler implements Devic
         this.subscribeTimeout = subscribeTimeout;
         this.attributeReceiveTimeout = attributeReceiveTimeout;
         this.delayedProcessing = new DelayedBatchProcessing<>(subscribeTimeout, this, scheduler);
-        this.device = new Device(this.thing.getUID(), this, new DeviceAttributes());
+        this.device = new Device(this.thing.getUID(), this);
     }
 
     /**
@@ -122,10 +121,12 @@ public class HomieThingHandler extends AbstractMQTTThingHandler implements Devic
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Object ID unknown");
             return;
         }
-        device.initialize(config.basetopic, config.deviceid, thing.getChannels());
+        device.initialize(config.basetopic, config.deviceid, config.homieVersion, thing.getChannels());
 
         updateThingType();
-        if (getThing().getThingTypeUID().equals(MqttBindingConstants.HOMIE300_MQTT_THING)) {
+        final ThingTypeUID thingTypeUID = getThing().getThingTypeUID();
+        if (thingTypeUID.equals(MqttBindingConstants.HOMIE_MQTT_THING)
+                || thingTypeUID.equals(MqttBindingConstants.HOMIE300_MQTT_THING)) {
             logger.debug("Migrating Homie thing {} from generic type to dynamic type {}", getThing().getUID(),
                     device.thingTypeUID);
             changeThingType(device.thingTypeUID, getConfig());
@@ -258,7 +259,7 @@ public class HomieThingHandler extends AbstractMQTTThingHandler implements Devic
         if (!device.isInitialized()) {
             return;
         }
-        updateProperty(MqttBindingConstants.HOMIE_PROPERTY_VERSION, device.attributes.homie);
+        updateProperty(MqttBindingConstants.HOMIE_PROPERTY_VERSION, device.attributes.getHomieVersion());
         updateThingType();
         updateChannels();
         final MqttBrokerConnection connection = this.connection;
@@ -294,13 +295,14 @@ public class HomieThingHandler extends AbstractMQTTThingHandler implements Devic
 
         // if this is a dynamic type, then we update the type
         ThingTypeUID typeID = device.thingTypeUID;
-        if (!MqttBindingConstants.HOMIE300_MQTT_THING.equals(typeID)) {
+        if (!MqttBindingConstants.HOMIE_MQTT_THING.equals(typeID)
+                && !MqttBindingConstants.HOMIE300_MQTT_THING.equals(typeID)) {
             channelTypeProvider.updateChannelGroupTypesForPrefix(thing.getThingTypeUID().getId(), device.nodes.stream()
                     .map(n -> n.type(thing.getThingTypeUID().getId(), channelTypeProvider)).toList());
 
             List<ChannelGroupDefinition> groupDefs = device.nodes.stream(nodeOrder())
                     .map(n -> n.getChannelGroupDefinition(thing.getThingTypeUID().getId())).toList();
-            var builder = channelTypeProvider.derive(typeID, MqttBindingConstants.HOMIE300_MQTT_THING)
+            var builder = channelTypeProvider.derive(typeID, MqttBindingConstants.HOMIE_MQTT_THING)
                     .withChannelGroupDefinitions(groupDefs);
 
             channelTypeProvider.putThingType(builder.build());
@@ -317,7 +319,7 @@ public class HomieThingHandler extends AbstractMQTTThingHandler implements Devic
     }
 
     private Collection<String> nodeOrder() {
-        String[] nodes = device.attributes.nodes;
+        String[] nodes = device.attributes.getNodes();
         if (nodes != null) {
             return Stream.of(nodes).toList();
         }

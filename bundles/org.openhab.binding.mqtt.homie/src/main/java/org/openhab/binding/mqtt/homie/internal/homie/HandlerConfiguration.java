@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.mqtt.homie.internal.homie300;
+package org.openhab.binding.mqtt.homie.internal.homie;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.mqtt.homie.internal.handler.HomieThingHandler;
@@ -36,4 +36,8 @@ public class HandlerConfiguration {
      * Indicates if retained topics should be removed when the Thing is deleted.
      */
     public boolean removetopics = false;
+    /**
+     * The version of the Homie convention that this device conforms to.
+     */
+    public String homieVersion = "";
 }

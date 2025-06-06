@@ -51,8 +51,8 @@ public class MqttThingHandlerFactory extends BaseThingHandlerFactory {
         this.channelTypeRegistry = channelTypeRegistry;
     }
 
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set
-            .of(MqttBindingConstants.HOMIE300_MQTT_THING);
+    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(MqttBindingConstants.HOMIE_MQTT_THING,
+            MqttBindingConstants.HOMIE300_MQTT_THING);
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -61,7 +61,8 @@ public class MqttThingHandlerFactory extends BaseThingHandlerFactory {
 
     private boolean isHomieDynamicType(ThingTypeUID thingTypeUID) {
         return MqttBindingConstants.BINDING_ID.equals(thingTypeUID.getBindingId())
-                && thingTypeUID.getId().startsWith(MqttBindingConstants.HOMIE300_MQTT_THING.getId());
+                && (thingTypeUID.getId().startsWith(MqttBindingConstants.HOMIE_MQTT_THING.getId())
+                        || thingTypeUID.getId().startsWith(MqttBindingConstants.HOMIE300_MQTT_THING.getId()));
     }
 
     @Override

@@ -14,10 +14,10 @@ package org.openhab.binding.mqtt.homie.internal.homie300;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.mqtt.generic.mapping.AbstractMqttAttributeClass;
 import org.openhab.binding.mqtt.generic.mapping.MQTTvalueTransform;
 import org.openhab.binding.mqtt.generic.mapping.MandatoryField;
 import org.openhab.binding.mqtt.generic.mapping.TopicPrefix;
+import org.openhab.binding.mqtt.homie.internal.homie.DeviceAttributes;
 
 /**
  * Homie 3.x Device attributes
@@ -26,25 +26,20 @@ import org.openhab.binding.mqtt.generic.mapping.TopicPrefix;
  */
 @TopicPrefix
 @NonNullByDefault
-public class DeviceAttributes extends AbstractMqttAttributeClass {
-    // Lower-case enum value names required. Those are identifiers for the MQTT/homie protocol.
-    public enum ReadyState {
-        unknown,
-        init,
-        ready,
-        disconnected,
-        sleeping,
-        lost,
-        alert
-    }
-
+public class Homie300DeviceAttributes extends DeviceAttributes {
     public @MandatoryField @Nullable String homie;
     public @MandatoryField @Nullable String name;
-    public @MandatoryField ReadyState state = ReadyState.unknown;
     public @MandatoryField @MQTTvalueTransform(splitCharacter = ",") String @Nullable [] nodes;
 
     @Override
-    public Object getFieldsOf() {
-        return this;
+    public String getHomieVersion() {
+        String homie = this.homie;
+        return homie != null ? homie : super.getHomieVersion();
+    }
+
+    @Override
+    public String[] getNodes() {
+        String[] nodes = this.nodes;
+        return nodes != null ? nodes : super.getNodes();
     }
 }

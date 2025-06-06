@@ -30,9 +30,9 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.openhab.binding.mqtt.generic.tools.ChildMap;
 import org.openhab.binding.mqtt.homie.internal.handler.ThingChannelConstants;
-import org.openhab.binding.mqtt.homie.internal.homie300.DeviceCallback;
-import org.openhab.binding.mqtt.homie.internal.homie300.Node;
-import org.openhab.binding.mqtt.homie.internal.homie300.NodeAttributes;
+import org.openhab.binding.mqtt.homie.internal.homie.DeviceCallback;
+import org.openhab.binding.mqtt.homie.internal.homie.Node;
+import org.openhab.binding.mqtt.homie.internal.homie.NodeAttributes;
 
 /**
  * Tests cases for {@link HomieChildMap}.

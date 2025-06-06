@@ -10,11 +10,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.mqtt.homie.internal.homie300;
+package org.openhab.binding.mqtt.homie.internal.homie;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -26,6 +25,8 @@ import org.openhab.binding.mqtt.generic.mapping.AbstractMqttAttributeClass;
 import org.openhab.binding.mqtt.generic.tools.ChildMap;
 import org.openhab.binding.mqtt.homie.generic.internal.MqttBindingConstants;
 import org.openhab.binding.mqtt.homie.internal.handler.HomieThingHandler;
+import org.openhab.binding.mqtt.homie.internal.homie300.Homie300DeviceAttributes;
+import org.openhab.binding.mqtt.homie.internal.homie500.Homie500DeviceAttributes;
 import org.openhab.core.io.transport.mqtt.MqttBrokerConnection;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -57,17 +58,18 @@ import org.slf4j.LoggerFactory;
 public class Device implements AbstractMqttAttributeClass.AttributeChanged {
     private final Logger logger = LoggerFactory.getLogger(Device.class);
     // The device attributes, statistics and nodes of this device
-    public final DeviceAttributes attributes;
+    public DeviceAttributes attributes;
     public final ChildMap<Node> nodes;
 
     // The corresponding ThingUID and callback of this device object
     public final ThingUID thingUID;
-    public ThingTypeUID thingTypeUID = MqttBindingConstants.HOMIE300_MQTT_THING;
+    public ThingTypeUID thingTypeUID = MqttBindingConstants.HOMIE_MQTT_THING;
     private final DeviceCallback callback;
 
     // Unique identifier and topic
     private String topic = "";
     public String deviceID = "";
+    private boolean isHomie5 = false;
     private boolean initialized = false;
 
     /**
@@ -77,8 +79,8 @@ public class Device implements AbstractMqttAttributeClass.AttributeChanged {
      * @param callback A callback, used to notify about new/removed nodes/properties and more.
      * @param attributes The device attributes object
      */
-    public Device(ThingUID thingUID, DeviceCallback callback, DeviceAttributes attributes) {
-        this(thingUID, callback, attributes, new ChildMap<>());
+    public Device(ThingUID thingUID, DeviceCallback callback) {
+        this(thingUID, callback, new ChildMap<>());
     }
 
     /**
@@ -86,13 +88,12 @@ public class Device implements AbstractMqttAttributeClass.AttributeChanged {
      *
      * @param thingUID The thing UID
      * @param callback A callback, used to notify about new/removed nodes/properties and more.
-     * @param attributes The device attributes object
      * @param nodes The nodes map
      */
-    public Device(ThingUID thingUID, DeviceCallback callback, DeviceAttributes attributes, ChildMap<Node> nodes) {
+    public Device(ThingUID thingUID, DeviceCallback callback, ChildMap<Node> nodes) {
         this.thingUID = thingUID;
         this.callback = callback;
-        this.attributes = attributes;
+        this.attributes = new DeviceAttributes();
         this.nodes = nodes;
     }
 
@@ -200,11 +201,23 @@ public class Device implements AbstractMqttAttributeClass.AttributeChanged {
      * @param channels
      */
     @SuppressWarnings({ "null", "unused" })
-    public void initialize(String baseTopic, String deviceID, List<Channel> channels) {
-        this.topic = baseTopic + "/" + deviceID;
+    public void initialize(String baseTopic, String deviceID, String homieVersion, List<Channel> channels) {
+        String[] strings = homieVersion.split(".");
+        if (strings.length > 0 && strings[0].equals("5")) {
+            isHomie5 = true;
+        } else {
+            isHomie5 = false;
+        }
+        if (isHomie5) {
+            this.topic = baseTopic + "/5/" + deviceID;
+            this.attributes = new Homie500DeviceAttributes();
+        } else {
+            this.topic = baseTopic + "/" + deviceID;
+            this.attributes = new Homie300DeviceAttributes();
+        }
         this.deviceID = deviceID;
         this.thingTypeUID = new ThingTypeUID(MqttBindingConstants.BINDING_ID,
-                MqttBindingConstants.HOMIE300_MQTT_THING.getId() + "_" + UIDUtils.encode(topic));
+                MqttBindingConstants.HOMIE_MQTT_THING.getId() + "_" + UIDUtils.encode(topic));
 
         nodes.clear();
         for (Channel channel : channels) {
@@ -309,9 +322,9 @@ public class Device implements AbstractMqttAttributeClass.AttributeChanged {
 
     CompletableFuture<@Nullable Void> applyNodes(MqttBrokerConnection connection, ScheduledExecutorService scheduler,
             int timeout) {
-        return nodes.apply(Objects.requireNonNull(attributes.nodes),
-                node -> node.subscribe(connection, scheduler, timeout), this::createNode, this::notifyNodeRemoved)
-                .exceptionally(e -> {
+        attributes.reset();
+        return nodes.apply(attributes.getNodes(), node -> node.subscribe(connection, scheduler, timeout),
+                this::createNode, this::notifyNodeRemoved).exceptionally(e -> {
                     logger.warn("Could not subscribe", e);
                     return null;
                 });
@@ -332,7 +345,8 @@ public class Device implements AbstractMqttAttributeClass.AttributeChanged {
                     callback.readyStateChanged(attributes.state);
                     return;
                 }
-                case "nodes": {
+                case "nodes":
+                case "description": {
                     applyNodes(connection, scheduler, 500);
                     return;
                 }

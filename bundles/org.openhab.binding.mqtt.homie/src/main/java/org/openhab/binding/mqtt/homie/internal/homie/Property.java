@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.mqtt.homie.internal.homie300;
+package org.openhab.binding.mqtt.homie.internal.homie;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -40,7 +40,7 @@ import org.openhab.binding.mqtt.generic.values.PercentageValue;
 import org.openhab.binding.mqtt.generic.values.TextValue;
 import org.openhab.binding.mqtt.generic.values.Value;
 import org.openhab.binding.mqtt.homie.generic.internal.MqttBindingConstants;
-import org.openhab.binding.mqtt.homie.internal.homie300.PropertyAttributes.DataTypeEnum;
+import org.openhab.binding.mqtt.homie.internal.homie.PropertyAttributes.DataTypeEnum;
 import org.openhab.core.io.transport.mqtt.MqttBrokerConnection;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;

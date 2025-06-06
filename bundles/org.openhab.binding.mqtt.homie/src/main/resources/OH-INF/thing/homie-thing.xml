@@ -20,9 +20,14 @@
 				<description>Homie Device ID. This is part of the MQTT topic, e.g. "homie/deviceid/$homie".</description>
 			</parameter>
 			<parameter name="basetopic" type="text" required="true">
-				<label>MQTT Base Prefix</label>
-				<description>MQTT base prefix</description>
+				<label>Domain</label>
+				<description>The MQTT base prefix, not including any Homie convention version.</description>
 				<default>homie</default>
+			</parameter>
+			<parameter name="homieVersion" type="integer" required="true">
+				<label>Homie Convention Version</label>
+				<description>Which version of the Homie convention specification this device conforms to.</description>
+				<default>4.0.0</default>
 			</parameter>
 			<parameter name="removetopics" type="boolean">
 				<label>Remove Retained Topics</label>

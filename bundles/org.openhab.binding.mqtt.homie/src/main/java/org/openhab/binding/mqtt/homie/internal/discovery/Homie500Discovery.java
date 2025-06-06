@@ -12,7 +12,6 @@
  */
 package org.openhab.binding.mqtt.homie.internal.discovery;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,21 +32,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link Homie300Discovery} is responsible for discovering device nodes that follow the
- * Homie 3.x convention (https://github.com/homieiot/convention).
+ * The {@link Homie500Discovery} is responsible for discovering device nodes that follow the
+ * Homie 5.x convention (https://homieiot.github.io/specification/spec-core-v5_0_0/).
  *
- * @author David Graeff - Initial contribution
+ * @author Cody Cutrer - Initial contribution
  */
 @Component(service = DiscoveryService.class, configurationPid = "discovery.mqtthomie")
 @NonNullByDefault
-public class Homie300Discovery extends AbstractMQTTDiscovery {
-    private final Logger logger = LoggerFactory.getLogger(Homie300Discovery.class);
+public class Homie500Discovery extends AbstractMQTTDiscovery {
+    private final Logger logger = LoggerFactory.getLogger(Homie500Discovery.class);
 
     protected final MQTTTopicDiscoveryService discoveryService;
 
     @Activate
-    public Homie300Discovery(@Reference MQTTTopicDiscoveryService discoveryService) {
-        super(Set.of(MqttBindingConstants.HOMIE_MQTT_THING), 3, true, "+/+/$homie");
+    public Homie500Discovery(@Reference MQTTTopicDiscoveryService discoveryService) {
+        super(Set.of(MqttBindingConstants.HOMIE_MQTT_THING), 3, true, "+/5/+/$state");
         this.discoveryService = discoveryService;
     }
 
@@ -57,22 +56,15 @@ public class Homie300Discovery extends AbstractMQTTDiscovery {
     }
 
     /**
-     * @param topic A topic like "homie/mydevice/$homie"
+     * @param topic A topic like "homie/5/mydevice/$state"
      * @return Returns the "mydevice" part of the example
      */
     public static @Nullable String extractDeviceID(String topic) {
         String[] strings = topic.split("/");
-        if (strings.length > 2) {
-            return strings[1];
+        if (strings.length > 3) {
+            return strings[2];
         }
         return null;
-    }
-
-    /**
-     * Returns true if the version is something like "3.x" or "4.x".
-     */
-    public static boolean checkVersion(byte[] payload) {
-        return payload.length > 0 && (payload[0] == '3' || payload[0] == '4');
     }
 
     @Override
@@ -80,30 +72,24 @@ public class Homie300Discovery extends AbstractMQTTDiscovery {
             byte[] payload) {
         resetTimeout();
 
-        if (!checkVersion(payload)) {
-            logger.trace("Found homie device. But version {} is out of range.",
-                    new String(payload, StandardCharsets.UTF_8));
-            return;
-        }
         final String deviceID = extractDeviceID(topic);
         if (deviceID == null) {
             logger.trace("Found homie device. But deviceID {} is invalid.", deviceID);
             return;
         }
-        final String homieVersion = new String(payload, StandardCharsets.UTF_8);
 
-        publishDevice(connectionBridge, connection, deviceID, topic, deviceID, homieVersion);
+        publishDevice(connectionBridge, connection, deviceID, topic, deviceID);
     }
 
     void publishDevice(ThingUID connectionBridge, MqttBrokerConnection connection, String deviceID, String topic,
-            String name, String homieVersion) {
+            String name) {
         Map<String, Object> properties = new HashMap<>();
         properties.put("deviceid", deviceID);
         properties.put("basetopic", topic.substring(0, topic.indexOf("/")));
-        properties.put("homieVersion", homieVersion);
+        properties.put("homieVersion", topic.substring(0, topic.indexOf("/")));
 
         thingDiscovered(DiscoveryResultBuilder
-                .create(new ThingUID(MqttBindingConstants.HOMIE300_MQTT_THING, connectionBridge, deviceID))
+                .create(new ThingUID(MqttBindingConstants.HOMIE_MQTT_THING, connectionBridge, deviceID))
                 .withBridge(connectionBridge).withProperties(properties).withRepresentationProperty("deviceid")
                 .withLabel(name).build());
     }
@@ -114,6 +100,6 @@ public class Homie300Discovery extends AbstractMQTTDiscovery {
         if (deviceID == null) {
             return;
         }
-        thingRemoved(new ThingUID(MqttBindingConstants.HOMIE300_MQTT_THING, connectionBridge, deviceID));
+        thingRemoved(new ThingUID(MqttBindingConstants.HOMIE_MQTT_THING, connectionBridge, deviceID));
     }
 }

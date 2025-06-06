@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.mqtt.homie.internal.homie300;
+package org.openhab.binding.mqtt.homie.internal.homie;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -35,5 +35,9 @@ public class NodeAttributes extends AbstractMqttAttributeClass {
     @Override
     public Object getFieldsOf() {
         return this;
+    }
+
+    public PropertyAttributes createPropertyAttributes() {
+        return new PropertyAttributes();
     }
 }
