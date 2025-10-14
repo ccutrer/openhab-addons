@@ -12,19 +12,15 @@
  */
 package org.openhab.io.homekit.internal.accessories;
 
-import static org.openhab.io.homekit.internal.HomekitCharacteristicType.ON_STATE;
-
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.openhab.io.homekit.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.internal.HomekitException;
 import org.openhab.io.homekit.internal.HomekitSettings;
 import org.openhab.io.homekit.internal.HomekitTaggedItem;
 
-import io.github.hapjava.accessories.SwitchAccessory;
 import io.github.hapjava.characteristics.Characteristic;
-import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback;
+import io.github.hapjava.characteristics.impl.common.OnCharacteristic;
 import io.github.hapjava.services.impl.SwitchService;
 
 /**
@@ -32,40 +28,16 @@ import io.github.hapjava.services.impl.SwitchService;
  *
  * @author Andy Lintner - Initial contribution
  */
-public class HomekitSwitchImpl extends AbstractHomekitAccessoryImpl implements SwitchAccessory {
-    private final BooleanItemReader onReader;
-
+public class HomekitSwitchImpl extends AbstractHomekitAccessoryImpl {
     public HomekitSwitchImpl(HomekitTaggedItem taggedItem, List<HomekitTaggedItem> mandatoryCharacteristics,
             List<Characteristic> mandatoryRawCharacteristics, HomekitAccessoryUpdater updater, HomekitSettings settings)
             throws IncompleteAccessoryException {
         super(taggedItem, mandatoryCharacteristics, mandatoryRawCharacteristics, updater, settings);
-        onReader = createBooleanReader(ON_STATE);
     }
 
     @Override
     public void init() throws HomekitException {
         super.init();
-        addService(new SwitchService(this));
-    }
-
-    @Override
-    public CompletableFuture<Boolean> getSwitchState() {
-        return CompletableFuture.completedFuture(onReader.getValue());
-    }
-
-    @Override
-    public CompletableFuture<Void> setSwitchState(boolean state) {
-        onReader.setValue(state);
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public void subscribeSwitchState(HomekitCharacteristicChangeCallback callback) {
-        subscribe(ON_STATE, callback);
-    }
-
-    @Override
-    public void unsubscribeSwitchState() {
-        unsubscribe(ON_STATE);
+        addService(new SwitchService(getCharacteristic(OnCharacteristic.class).get()));
     }
 }

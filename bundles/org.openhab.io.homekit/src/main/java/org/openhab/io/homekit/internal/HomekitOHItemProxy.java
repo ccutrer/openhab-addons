@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.ThreadPoolManager;
+import org.openhab.core.events.AbstractEvent;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.library.items.ColorItem;
@@ -59,6 +60,7 @@ public class HomekitOHItemProxy {
     private HomekitDimmerMode dimmerMode = DIMMER_MODE_NORMAL;
     // delay, how long wait for further commands. in ms.
     private int delay = DEFAULT_DELAY;
+    private @Nullable String username;
 
     public static Item getBaseItem(Item item) {
         if (item instanceof GroupItem groupItem) {
@@ -111,9 +113,9 @@ public class HomekitOHItemProxy {
                             && ((brightness == null) || (brightness.intValue() == 100)))) {
                 logger.trace("send OnOff command for item {} with value {}", item, on);
                 if (item instanceof GroupItem groupItem) {
-                    groupItem.send(on, HOMEKIT_SOURCE);
+                    groupItem.send(on, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
                 } else {
-                    ((DimmerItem) item).send(on, HOMEKIT_SOURCE);
+                    ((DimmerItem) item).send(on, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
                 }
             }
         }
@@ -141,6 +143,7 @@ public class HomekitOHItemProxy {
                 }
             }
         }
+        username = null;
         commandCache.clear();
     }
 
@@ -153,16 +156,17 @@ public class HomekitOHItemProxy {
         final PercentType targetBrightness = brightness != null ? brightness : currentState.getBrightness();
         final HSBType command = new HSBType(targetHue, targetSaturation, targetBrightness);
         if (item instanceof GroupItem groupItem) {
-            groupItem.send(command, HOMEKIT_SOURCE);
+            groupItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
         } else {
-            ((ColorItem) item).send(command, HOMEKIT_SOURCE);
+            ((ColorItem) item).send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
         }
         logger.trace("send HSB command for item {} with following values hue={} saturation={} brightness={}", item,
                 targetHue, targetSaturation, targetBrightness);
     }
 
-    public synchronized void sendCommandProxy(HomekitCommandType commandType, State state) {
+    public synchronized void sendCommandProxy(HomekitCommandType commandType, State state, @Nullable String username) {
         commandCache.put(commandType, state);
+        this.username = username;
         logger.trace("add command to command cache: item {}, command type {}, command state {}. cache state after: {}",
                 this, commandType, state, commandCache);
         // if cache has already HUE+SATURATION or BRIGHTNESS+ON then we don't expect any further relevant command

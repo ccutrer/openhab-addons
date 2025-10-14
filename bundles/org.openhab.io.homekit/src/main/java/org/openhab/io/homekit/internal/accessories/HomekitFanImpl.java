@@ -15,16 +15,13 @@ package org.openhab.io.homekit.internal.accessories;
 import static org.openhab.io.homekit.internal.HomekitCharacteristicType.ACTIVE_STATUS;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.openhab.io.homekit.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.internal.HomekitException;
 import org.openhab.io.homekit.internal.HomekitSettings;
 import org.openhab.io.homekit.internal.HomekitTaggedItem;
 
-import io.github.hapjava.accessories.FanAccessory;
 import io.github.hapjava.characteristics.Characteristic;
-import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback;
 import io.github.hapjava.services.impl.FanService;
 
 /**
@@ -32,40 +29,18 @@ import io.github.hapjava.services.impl.FanService;
  *
  * @author Eugen Freiter - Initial contribution
  */
-class HomekitFanImpl extends AbstractHomekitAccessoryImpl implements FanAccessory {
-    private final BooleanItemReader activeReader;
-
+class HomekitFanImpl extends AbstractHomekitAccessoryImpl {
     public HomekitFanImpl(HomekitTaggedItem taggedItem, List<HomekitTaggedItem> mandatoryCharacteristics,
             List<Characteristic> mandatoryRawCharacteristics, HomekitAccessoryUpdater updater, HomekitSettings settings)
             throws IncompleteAccessoryException {
         super(taggedItem, mandatoryCharacteristics, mandatoryRawCharacteristics, updater, settings);
-        activeReader = createBooleanReader(ACTIVE_STATUS);
     }
 
     @Override
     public void init() throws HomekitException {
         super.init();
-        addService(new FanService(this));
-    }
 
-    @Override
-    public CompletableFuture<Boolean> isActive() {
-        return CompletableFuture.completedFuture(activeReader.getValue());
-    }
-
-    @Override
-    public CompletableFuture<Void> setActive(boolean state) {
-        activeReader.setValue(state);
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public void subscribeActive(HomekitCharacteristicChangeCallback callback) {
-        subscribe(ACTIVE_STATUS, callback);
-    }
-
-    @Override
-    public void unsubscribeActive() {
-        unsubscribe(ACTIVE_STATUS);
+        addService(new FanService(HomekitCharacteristicFactory
+                .createActiveCharacteristic(getCharacteristic(ACTIVE_STATUS).get(), getUpdater())));
     }
 }

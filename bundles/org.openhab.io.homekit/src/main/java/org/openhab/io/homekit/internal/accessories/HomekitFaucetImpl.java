@@ -12,19 +12,15 @@
  */
 package org.openhab.io.homekit.internal.accessories;
 
-import static org.openhab.io.homekit.internal.HomekitCharacteristicType.ACTIVE;
-
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.openhab.io.homekit.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.internal.HomekitException;
 import org.openhab.io.homekit.internal.HomekitSettings;
 import org.openhab.io.homekit.internal.HomekitTaggedItem;
 
-import io.github.hapjava.accessories.FaucetAccessory;
 import io.github.hapjava.characteristics.Characteristic;
-import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback;
+import io.github.hapjava.characteristics.impl.common.ActiveCharacteristic;
 import io.github.hapjava.services.impl.FaucetService;
 
 /**
@@ -32,40 +28,16 @@ import io.github.hapjava.services.impl.FaucetService;
  *
  * @author Eugen Freiter - Initial contribution
  */
-class HomekitFaucetImpl extends AbstractHomekitAccessoryImpl implements FaucetAccessory {
-    private final BooleanItemReader activeReader;
-
+class HomekitFaucetImpl extends AbstractHomekitAccessoryImpl {
     public HomekitFaucetImpl(HomekitTaggedItem taggedItem, List<HomekitTaggedItem> mandatoryCharacteristics,
             List<Characteristic> mandatoryRawCharacteristics, HomekitAccessoryUpdater updater, HomekitSettings settings)
             throws IncompleteAccessoryException {
         super(taggedItem, mandatoryCharacteristics, mandatoryRawCharacteristics, updater, settings);
-        activeReader = createBooleanReader(ACTIVE);
     }
 
     @Override
     public void init() throws HomekitException {
         super.init();
-        addService(new FaucetService(this));
-    }
-
-    @Override
-    public CompletableFuture<Boolean> isActive() {
-        return CompletableFuture.completedFuture(activeReader.getValue());
-    }
-
-    @Override
-    public CompletableFuture<Void> setActive(boolean state) {
-        activeReader.setValue(state);
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public void subscribeActive(HomekitCharacteristicChangeCallback callback) {
-        subscribe(ACTIVE, callback);
-    }
-
-    @Override
-    public void unsubscribeActive() {
-        unsubscribe(ACTIVE);
+        addService(new FaucetService(getCharacteristic(ActiveCharacteristic.class).get()));
     }
 }

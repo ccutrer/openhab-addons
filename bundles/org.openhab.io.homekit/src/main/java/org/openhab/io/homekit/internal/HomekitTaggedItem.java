@@ -23,6 +23,7 @@ import javax.measure.Unit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.events.AbstractEvent;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.library.items.DimmerItem;
@@ -182,12 +183,12 @@ public class HomekitTaggedItem {
      * 
      * @param command
      */
-    public void send(DecimalType command) {
+    public void send(DecimalType command, @Nullable String username) {
         if (getItem() instanceof GroupItem groupItem && getBaseItem() instanceof NumberItem) {
-            groupItem.send(command, HOMEKIT_SOURCE);
+            groupItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         } else if (getItem() instanceof NumberItem numberItem) {
-            numberItem.send(command, HOMEKIT_SOURCE);
+            numberItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         }
         logger.warn("Received DecimalType command for item {} that doesn't support it. This is probably a bug.",
@@ -199,12 +200,12 @@ public class HomekitTaggedItem {
      * 
      * @param command
      */
-    public void send(QuantityType command) {
+    public void send(QuantityType command, @Nullable String username) {
         if (getItem() instanceof GroupItem groupItem && getBaseItem() instanceof NumberItem) {
-            groupItem.send(command, HOMEKIT_SOURCE);
+            groupItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         } else if (getItem() instanceof NumberItem numberItem) {
-            numberItem.send(command, HOMEKIT_SOURCE);
+            numberItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         }
         logger.warn("Received QuantityType command for item {} that doesn't support it. This is probably a bug.",
@@ -216,12 +217,12 @@ public class HomekitTaggedItem {
      * 
      * @param command
      */
-    public void send(OnOffType command) {
+    public void send(OnOffType command, @Nullable String username) {
         if (getItem() instanceof GroupItem groupItem && getBaseItem() instanceof SwitchItem) {
-            groupItem.send(command, HOMEKIT_SOURCE);
+            groupItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         } else if (getItem() instanceof SwitchItem switchItem) {
-            switchItem.send(command, HOMEKIT_SOURCE);
+            switchItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         }
         logger.warn("Received OnOffType command for item {} that doesn't support it. This is probably a bug.",
@@ -231,12 +232,12 @@ public class HomekitTaggedItem {
     /**
      * Send IncreaseDecreaseType command to a DimmerItem (or a Group:Dimmer)
      */
-    public void send(IncreaseDecreaseType command) {
+    public void send(IncreaseDecreaseType command, @Nullable String username) {
         if (getItem() instanceof GroupItem groupItem && getBaseItem() instanceof DimmerItem) {
-            groupItem.send(command, HOMEKIT_SOURCE);
+            groupItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         } else if (getItem() instanceof DimmerItem dimmerItem) {
-            dimmerItem.send(command, HOMEKIT_SOURCE);
+            dimmerItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         }
         logger.warn(
@@ -249,16 +250,16 @@ public class HomekitTaggedItem {
      * 
      * @param command
      */
-    public void send(PercentType command) {
+    public void send(PercentType command, @Nullable String username) {
         if (getItem() instanceof GroupItem groupItem
                 && (getBaseItem() instanceof DimmerItem || getBaseItem() instanceof RollershutterItem)) {
-            groupItem.send(command, HOMEKIT_SOURCE);
+            groupItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         } else if (getItem() instanceof DimmerItem dimmerItem) {
-            dimmerItem.send(command, HOMEKIT_SOURCE);
+            dimmerItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         } else if (getItem() instanceof RollershutterItem rollerShutterItem) {
-            rollerShutterItem.send(command, HOMEKIT_SOURCE);
+            rollerShutterItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         }
         logger.warn("Received PercentType command for item {} that doesn't support it. This is probably a bug.",
@@ -270,12 +271,12 @@ public class HomekitTaggedItem {
      * 
      * @param command
      */
-    public void send(StringType command) {
+    public void send(StringType command, @Nullable String username) {
         if (getItem() instanceof GroupItem groupItem && getBaseItem() instanceof StringItem) {
-            groupItem.send(command, HOMEKIT_SOURCE);
+            groupItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         } else if (getItem() instanceof StringItem stringItem) {
-            stringItem.send(command, HOMEKIT_SOURCE);
+            stringItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         }
         logger.warn("Received StringType command for item {} that doesn't support it. This is probably a bug.",
@@ -285,12 +286,12 @@ public class HomekitTaggedItem {
     /**
      * Send UpDownType command to a RollshutterItem (or a Group:Rollershutter)
      */
-    public void send(UpDownType command) {
+    public void send(UpDownType command, @Nullable String username) {
         if (getItem() instanceof GroupItem groupItem && getBaseItem() instanceof RollershutterItem) {
-            groupItem.send(command, HOMEKIT_SOURCE);
+            groupItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         } else if (getItem() instanceof RollershutterItem rollershutterItem) {
-            rollershutterItem.send(command, HOMEKIT_SOURCE);
+            rollershutterItem.send(command, AbstractEvent.buildSource(HOMEKIT_SOURCE, username));
             return;
         }
         logger.warn("Received UpDownType command for item {} that doesn't support it. This is probably a bug.",
@@ -305,8 +306,8 @@ public class HomekitTaggedItem {
      * @param commandType type of the command, e.g. HomekitCommandType.HUE_COMMAND
      * @param command command/state
      */
-    public void sendCommandProxy(HomekitCommandType commandType, State command) {
-        proxyItem.sendCommandProxy(commandType, command);
+    public void sendCommandProxy(HomekitCommandType commandType, State command, @Nullable String username) {
+        proxyItem.sendCommandProxy(commandType, command, username);
     }
 
     public int getId() {

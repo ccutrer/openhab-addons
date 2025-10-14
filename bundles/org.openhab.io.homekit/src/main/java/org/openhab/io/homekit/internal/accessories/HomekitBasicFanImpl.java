@@ -12,10 +12,7 @@
  */
 package org.openhab.io.homekit.internal.accessories;
 
-import static org.openhab.io.homekit.internal.HomekitCharacteristicType.ON_STATE;
-
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.internal.HomekitAccessoryUpdater;
@@ -23,9 +20,8 @@ import org.openhab.io.homekit.internal.HomekitException;
 import org.openhab.io.homekit.internal.HomekitSettings;
 import org.openhab.io.homekit.internal.HomekitTaggedItem;
 
-import io.github.hapjava.accessories.BasicFanAccessory;
 import io.github.hapjava.characteristics.Characteristic;
-import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback;
+import io.github.hapjava.characteristics.impl.common.OnCharacteristic;
 import io.github.hapjava.services.impl.BasicFanService;
 
 /**
@@ -34,40 +30,16 @@ import io.github.hapjava.services.impl.BasicFanService;
  * @author Cody Cutrer - Initial contribution
  */
 @NonNullByDefault({})
-class HomekitBasicFanImpl extends AbstractHomekitAccessoryImpl implements BasicFanAccessory {
-    private final BooleanItemReader onReader;
-
+class HomekitBasicFanImpl extends AbstractHomekitAccessoryImpl {
     public HomekitBasicFanImpl(HomekitTaggedItem taggedItem, List<HomekitTaggedItem> mandatoryCharacteristics,
             List<Characteristic> mandatoryRawCharacteristics, HomekitAccessoryUpdater updater, HomekitSettings settings)
             throws IncompleteAccessoryException {
         super(taggedItem, mandatoryCharacteristics, mandatoryRawCharacteristics, updater, settings);
-        onReader = createBooleanReader(ON_STATE);
     }
 
     @Override
     public void init() throws HomekitException {
         super.init();
-        addService(new BasicFanService(this));
-    }
-
-    @Override
-    public CompletableFuture<Boolean> isOn() {
-        return CompletableFuture.completedFuture(onReader.getValue());
-    }
-
-    @Override
-    public CompletableFuture<Void> setOn(boolean state) {
-        onReader.setValue(state);
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public void subscribeOn(HomekitCharacteristicChangeCallback callback) {
-        subscribe(ON_STATE, callback);
-    }
-
-    @Override
-    public void unsubscribeOn() {
-        unsubscribe(ON_STATE);
+        addService(new BasicFanService(getCharacteristic(OnCharacteristic.class).get()));
     }
 }

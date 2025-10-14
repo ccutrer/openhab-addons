@@ -13,9 +13,12 @@
 package org.openhab.io.homekit.internal.accessories;
 
 import java.math.BigDecimal;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.events.AbstractEvent;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.library.items.ContactItem;
@@ -30,8 +33,11 @@ import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.internal.HomekitOHItemProxy;
+import org.openhab.io.homekit.internal.HomekitTaggedItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.github.hapjava.characteristics.ExceptionalConsumer;
 
 /**
  * Wraps either a SwitchItem or a ContactItem, interpreting the open / closed states accordingly.
@@ -40,7 +46,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @NonNullByDefault
-public class BooleanItemReader {
+public class BooleanItemReader implements ExceptionalConsumer<Boolean>, Supplier<CompletableFuture<Boolean>> {
     private final Item item;
     private final OnOffType trueOnOffValue;
     private final OpenClosedType trueOpenClosedValue;
@@ -113,15 +119,30 @@ public class BooleanItemReader {
         return false;
     }
 
-    private OnOffType getOffValue(OnOffType onValue) {
-        return OnOffType.from(onValue != OnOffType.ON);
+    public OnOffType getOnOffValue(Boolean value) {
+        if (value) {
+            return trueOnOffValue;
+        }
+        return OnOffType.from(trueOnOffValue != OnOffType.ON);
     }
 
-    void setValue(Boolean value) {
+    @Override
+    public CompletableFuture<Boolean> get() {
+        return CompletableFuture.completedFuture(getValue());
+    }
+
+    @Override
+    public void accept(Boolean value) throws Exception {
+        accept(value, null);
+    }
+
+    @Override
+    public void accept(Boolean value, @Nullable String username) throws Exception {
         if (item instanceof SwitchItem switchItem) {
-            switchItem.send(value ? trueOnOffValue : getOffValue(trueOnOffValue));
+            switchItem.send(getOnOffValue(value),
+                    AbstractEvent.buildSource(HomekitTaggedItem.HOMEKIT_SOURCE, username));
         } else if (item instanceof GroupItem groupItem) {
-            groupItem.send(value ? trueOnOffValue : getOffValue(trueOnOffValue));
+            groupItem.send(getOnOffValue(value), AbstractEvent.buildSource(HomekitTaggedItem.HOMEKIT_SOURCE, username));
         } else {
             logger.debug("Cannot set value {} for item {}. Only Switch and Group items are supported.", value, item);
         }

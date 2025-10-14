@@ -13,17 +13,14 @@
 package org.openhab.io.homekit.internal.accessories;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.openhab.io.homekit.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.internal.HomekitCharacteristicType;
 import org.openhab.io.homekit.internal.HomekitException;
 import org.openhab.io.homekit.internal.HomekitSettings;
 import org.openhab.io.homekit.internal.HomekitTaggedItem;
 
-import io.github.hapjava.accessories.MicrophoneAccessory;
 import io.github.hapjava.characteristics.Characteristic;
-import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback;
+import io.github.hapjava.characteristics.impl.audio.MuteCharacteristic;
 import io.github.hapjava.services.impl.MicrophoneService;
 
 /**
@@ -31,40 +28,16 @@ import io.github.hapjava.services.impl.MicrophoneService;
  *
  * @author Eugen Freiter - Initial contribution
  */
-public class HomekitMicrophoneImpl extends AbstractHomekitAccessoryImpl implements MicrophoneAccessory {
-    private final BooleanItemReader muteReader;
-
+public class HomekitMicrophoneImpl extends AbstractHomekitAccessoryImpl {
     public HomekitMicrophoneImpl(HomekitTaggedItem taggedItem, List<HomekitTaggedItem> mandatoryCharacteristics,
             List<Characteristic> mandatoryRawCharacteristics, HomekitAccessoryUpdater updater, HomekitSettings settings)
             throws IncompleteAccessoryException {
         super(taggedItem, mandatoryCharacteristics, mandatoryRawCharacteristics, updater, settings);
-        muteReader = createBooleanReader(HomekitCharacteristicType.MUTE);
     }
 
     @Override
     public void init() throws HomekitException {
         super.init();
-        addService(new MicrophoneService(this));
-    }
-
-    @Override
-    public CompletableFuture<Boolean> isMuted() {
-        return CompletableFuture.completedFuture(muteReader.getValue());
-    }
-
-    @Override
-    public CompletableFuture<Void> setMute(boolean state) {
-        muteReader.setValue(state);
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public void subscribeMuteState(HomekitCharacteristicChangeCallback callback) {
-        subscribe(HomekitCharacteristicType.MUTE, callback);
-    }
-
-    @Override
-    public void unsubscribeMuteState() {
-        unsubscribe(HomekitCharacteristicType.MUTE);
+        addService(new MicrophoneService(getCharacteristic(MuteCharacteristic.class).get()));
     }
 }

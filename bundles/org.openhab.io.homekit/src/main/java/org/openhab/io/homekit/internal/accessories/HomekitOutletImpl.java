@@ -13,7 +13,6 @@
 package org.openhab.io.homekit.internal.accessories;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.openhab.io.homekit.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.internal.HomekitCharacteristicType;
@@ -21,66 +20,31 @@ import org.openhab.io.homekit.internal.HomekitException;
 import org.openhab.io.homekit.internal.HomekitSettings;
 import org.openhab.io.homekit.internal.HomekitTaggedItem;
 
-import io.github.hapjava.accessories.OutletAccessory;
 import io.github.hapjava.characteristics.Characteristic;
-import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback;
+import io.github.hapjava.characteristics.impl.common.OnCharacteristic;
+import io.github.hapjava.characteristics.impl.outlet.OutletInUseCharacteristic;
 import io.github.hapjava.services.impl.OutletService;
 
 /**
  *
  * @author Eugen Freiter - Initial contribution
  */
-public class HomekitOutletImpl extends AbstractHomekitAccessoryImpl implements OutletAccessory {
+public class HomekitOutletImpl extends AbstractHomekitAccessoryImpl {
     private final BooleanItemReader inUseReader;
-    private final BooleanItemReader onReader;
 
     public HomekitOutletImpl(HomekitTaggedItem taggedItem, List<HomekitTaggedItem> mandatoryCharacteristics,
             List<Characteristic> mandatoryRawCharacteristics, HomekitAccessoryUpdater updater, HomekitSettings settings)
             throws IncompleteAccessoryException {
         super(taggedItem, mandatoryCharacteristics, mandatoryRawCharacteristics, updater, settings);
         inUseReader = createBooleanReader(HomekitCharacteristicType.INUSE_STATUS);
-        onReader = createBooleanReader(HomekitCharacteristicType.ON_STATE);
     }
 
     @Override
     public void init() throws HomekitException {
         super.init();
-        addService(new OutletService(this));
-    }
-
-    @Override
-    public CompletableFuture<Boolean> getPowerState() {
-        return CompletableFuture.completedFuture(onReader.getValue());
-    }
-
-    @Override
-    public CompletableFuture<Boolean> getOutletInUse() {
-        return CompletableFuture.completedFuture(inUseReader.getValue());
-    }
-
-    @Override
-    public CompletableFuture<Void> setPowerState(boolean state) {
-        onReader.setValue(state);
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public void subscribePowerState(HomekitCharacteristicChangeCallback callback) {
-        subscribe(HomekitCharacteristicType.ON_STATE, callback);
-    }
-
-    @Override
-    public void subscribeOutletInUse(HomekitCharacteristicChangeCallback callback) {
-        subscribe(HomekitCharacteristicType.INUSE_STATUS, callback);
-    }
-
-    @Override
-    public void unsubscribePowerState() {
-        unsubscribe(HomekitCharacteristicType.ON_STATE);
-    }
-
-    @Override
-    public void unsubscribeOutletInUse() {
-        unsubscribe(HomekitCharacteristicType.INUSE_STATUS);
+        addService(new OutletService(getCharacteristic(OnCharacteristic.class).get(),
+                new OutletInUseCharacteristic(inUseReader,
+                        (cb) -> subscribe(HomekitCharacteristicType.INUSE_STATUS, cb),
+                        () -> unsubscribe(HomekitCharacteristicType.INUSE_STATUS))));
     }
 }

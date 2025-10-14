@@ -12,25 +12,16 @@
  */
 package org.openhab.io.homekit.internal.accessories;
 
-import static org.openhab.io.homekit.internal.HomekitCharacteristicType.SECURITY_SYSTEM_CURRENT_STATE;
-import static org.openhab.io.homekit.internal.HomekitCharacteristicType.SECURITY_SYSTEM_TARGET_STATE;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import org.openhab.io.homekit.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.internal.HomekitCharacteristicType;
 import org.openhab.io.homekit.internal.HomekitException;
 import org.openhab.io.homekit.internal.HomekitSettings;
 import org.openhab.io.homekit.internal.HomekitTaggedItem;
 
-import io.github.hapjava.accessories.SecuritySystemAccessory;
 import io.github.hapjava.characteristics.Characteristic;
-import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback;
-import io.github.hapjava.characteristics.impl.securitysystem.CurrentSecuritySystemStateEnum;
-import io.github.hapjava.characteristics.impl.securitysystem.TargetSecuritySystemStateEnum;
+import io.github.hapjava.characteristics.impl.securitysystem.CurrentSecuritySystemStateCharacteristic;
+import io.github.hapjava.characteristics.impl.securitysystem.TargetSecuritySystemStateCharacteristic;
 import io.github.hapjava.services.impl.SecuritySystemService;
 
 /**
@@ -42,78 +33,17 @@ import io.github.hapjava.services.impl.SecuritySystemService;
  * 
  * @author Cody Cutrer - Initial contribution
  */
-public class HomekitSecuritySystemImpl extends AbstractHomekitAccessoryImpl implements SecuritySystemAccessory {
-    private final Map<CurrentSecuritySystemStateEnum, Object> currentStateMapping;
-    private final Map<TargetSecuritySystemStateEnum, Object> targetStateMapping;
-    private final List<CurrentSecuritySystemStateEnum> customCurrentStateList = new ArrayList<>();
-    private final List<TargetSecuritySystemStateEnum> customTargetStateList = new ArrayList<>();
-
+public class HomekitSecuritySystemImpl extends AbstractHomekitAccessoryImpl {
     public HomekitSecuritySystemImpl(HomekitTaggedItem taggedItem, List<HomekitTaggedItem> mandatoryCharacteristics,
             List<Characteristic> mandatoryRawCharacteristics, HomekitAccessoryUpdater updater,
             HomekitSettings settings) {
         super(taggedItem, mandatoryCharacteristics, mandatoryRawCharacteristics, updater, settings);
-        currentStateMapping = createMapping(SECURITY_SYSTEM_CURRENT_STATE, CurrentSecuritySystemStateEnum.class,
-                customCurrentStateList);
-        targetStateMapping = createMapping(SECURITY_SYSTEM_TARGET_STATE, TargetSecuritySystemStateEnum.class,
-                customTargetStateList);
     }
 
     @Override
     public void init() throws HomekitException {
         super.init();
-        addService(new SecuritySystemService(this));
-    }
-
-    @Override
-    public CurrentSecuritySystemStateEnum[] getCurrentSecuritySystemStateValidValues() {
-        return customCurrentStateList.isEmpty()
-                ? currentStateMapping.keySet().toArray(new CurrentSecuritySystemStateEnum[0])
-                : customCurrentStateList.toArray(new CurrentSecuritySystemStateEnum[0]);
-    }
-
-    @Override
-    public TargetSecuritySystemStateEnum[] getTargetSecuritySystemStateValidValues() {
-        return customTargetStateList.isEmpty()
-                ? targetStateMapping.keySet().toArray(new TargetSecuritySystemStateEnum[0])
-                : customTargetStateList.toArray(new TargetSecuritySystemStateEnum[0]);
-    }
-
-    @Override
-    public CompletableFuture<CurrentSecuritySystemStateEnum> getCurrentSecuritySystemState() {
-        return CompletableFuture.completedFuture(getKeyFromMapping(SECURITY_SYSTEM_CURRENT_STATE, currentStateMapping,
-                CurrentSecuritySystemStateEnum.DISARMED));
-    }
-
-    @Override
-    public void setTargetSecuritySystemState(TargetSecuritySystemStateEnum state) {
-        HomekitCharacteristicFactory.setValueFromEnum(
-                getCharacteristic(HomekitCharacteristicType.SECURITY_SYSTEM_TARGET_STATE).get(), state,
-                targetStateMapping);
-    }
-
-    @Override
-    public CompletableFuture<TargetSecuritySystemStateEnum> getTargetSecuritySystemState() {
-        return CompletableFuture.completedFuture(getKeyFromMapping(SECURITY_SYSTEM_TARGET_STATE, targetStateMapping,
-                TargetSecuritySystemStateEnum.DISARM));
-    }
-
-    @Override
-    public void subscribeCurrentSecuritySystemState(HomekitCharacteristicChangeCallback callback) {
-        subscribe(SECURITY_SYSTEM_CURRENT_STATE, callback);
-    }
-
-    @Override
-    public void unsubscribeCurrentSecuritySystemState() {
-        unsubscribe(SECURITY_SYSTEM_CURRENT_STATE);
-    }
-
-    @Override
-    public void subscribeTargetSecuritySystemState(HomekitCharacteristicChangeCallback callback) {
-        subscribe(SECURITY_SYSTEM_TARGET_STATE, callback);
-    }
-
-    @Override
-    public void unsubscribeTargetSecuritySystemState() {
-        unsubscribe(SECURITY_SYSTEM_TARGET_STATE);
+        addService(new SecuritySystemService(getCharacteristic(CurrentSecuritySystemStateCharacteristic.class).get(),
+                getCharacteristic(TargetSecuritySystemStateCharacteristic.class).get()));
     }
 }

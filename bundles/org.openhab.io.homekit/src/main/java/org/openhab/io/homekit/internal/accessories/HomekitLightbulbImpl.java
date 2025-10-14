@@ -13,21 +13,14 @@
 package org.openhab.io.homekit.internal.accessories;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-import org.openhab.core.library.items.DimmerItem;
-import org.openhab.core.library.items.SwitchItem;
-import org.openhab.core.library.types.OnOffType;
 import org.openhab.io.homekit.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.internal.HomekitCharacteristicType;
-import org.openhab.io.homekit.internal.HomekitCommandType;
 import org.openhab.io.homekit.internal.HomekitException;
 import org.openhab.io.homekit.internal.HomekitSettings;
 import org.openhab.io.homekit.internal.HomekitTaggedItem;
 
-import io.github.hapjava.accessories.LightbulbAccessory;
 import io.github.hapjava.characteristics.Characteristic;
-import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback;
+import io.github.hapjava.characteristics.impl.common.OnCharacteristic;
 import io.github.hapjava.services.impl.LightbulbService;
 
 /**
@@ -35,7 +28,7 @@ import io.github.hapjava.services.impl.LightbulbService;
  *
  * @author Andy Lintner - Initial contribution
  */
-class HomekitLightbulbImpl extends AbstractHomekitAccessoryImpl implements LightbulbAccessory {
+class HomekitLightbulbImpl extends AbstractHomekitAccessoryImpl {
 
     public HomekitLightbulbImpl(HomekitTaggedItem taggedItem, List<HomekitTaggedItem> mandatoryCharacteristics,
             List<Characteristic> mandatoryRawCharacteristics, HomekitAccessoryUpdater updater,
@@ -46,35 +39,6 @@ class HomekitLightbulbImpl extends AbstractHomekitAccessoryImpl implements Light
     @Override
     public void init() throws HomekitException {
         super.init();
-        addService(new LightbulbService(this));
-    }
-
-    @Override
-    public CompletableFuture<Boolean> getLightbulbPowerState() {
-        OnOffType state = getStateAs(HomekitCharacteristicType.ON_STATE, OnOffType.class);
-        return CompletableFuture.completedFuture(state == OnOffType.ON);
-    }
-
-    @Override
-    public CompletableFuture<Void> setLightbulbPowerState(boolean value) {
-        getCharacteristic(HomekitCharacteristicType.ON_STATE).ifPresent(tItem -> {
-            final OnOffType onOffState = OnOffType.from(value);
-            if (tItem.getBaseItem() instanceof DimmerItem) {
-                tItem.sendCommandProxy(HomekitCommandType.ON_COMMAND, onOffState);
-            } else if (tItem.getBaseItem() instanceof SwitchItem) {
-                tItem.send(onOffState);
-            }
-        });
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public void subscribeLightbulbPowerState(HomekitCharacteristicChangeCallback callback) {
-        subscribe(HomekitCharacteristicType.ON_STATE, callback);
-    }
-
-    @Override
-    public void unsubscribeLightbulbPowerState() {
-        unsubscribe(HomekitCharacteristicType.ON_STATE);
+        addService(new LightbulbService(getCharacteristic(OnCharacteristic.class).get()));
     }
 }

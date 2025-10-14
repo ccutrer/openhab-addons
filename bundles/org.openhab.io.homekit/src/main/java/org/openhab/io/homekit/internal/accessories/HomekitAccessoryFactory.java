@@ -95,7 +95,7 @@ public class HomekitAccessoryFactory {
             put(OCCUPANCY_SENSOR, new HomekitCharacteristicType[] { OCCUPANCY_DETECTED_STATE });
             put(OUTLET, new HomekitCharacteristicType[] { ON_STATE, INUSE_STATUS });
             put(SECURITY_SYSTEM,
-                    new HomekitCharacteristicType[] { SECURITY_SYSTEM_CURRENT_STATE, SECURITY_SYSTEM_TARGET_STATE });
+                    new HomekitCharacteristicType[] { CURRENT_SECURITY_SYSTEM_STATE, TARGET_SECURITY_SYSTEM_STATE });
             put(SMART_SPEAKER, new HomekitCharacteristicType[] { CURRENT_MEDIA_STATE, TARGET_MEDIA_STATE });
             put(SMOKE_SENSOR, new HomekitCharacteristicType[] { SMOKE_DETECTED_STATE });
             put(SLAT, new HomekitCharacteristicType[] { CURRENT_SLAT_STATE });
