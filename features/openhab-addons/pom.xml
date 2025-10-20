@@ -45,10 +45,8 @@
                 <concat destfile="src/main/feature/feature.xml">
                   <header file="src/main/resources/header.xml" filtering="no"/>
                   <fileset dir="${basedirRoot}/bundles">
-                    <include name="*/src/main/feature/feature.xml"/>
-                    <exclude name="**/org.openhab.binding.bluetooth*/**/feature.xml"/>
-                    <exclude name="**/org.openhab.binding.modbus*/**/feature.xml"/>
-                    <exclude name="**/org.openhab.binding.mqtt*/**/feature.xml"/>
+                    <include name="**/org.openhab.automation.jrubyscripting/src/main/feature/feature.xml"/>
+                    <include name="**/org.openhab.binding.homeassistant/src/main/feature/feature.xml"/>
                   </fileset>
                   <filterchain>
                     <linecontainsRegExp>
